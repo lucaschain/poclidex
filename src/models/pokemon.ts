@@ -4,10 +4,16 @@ import type { Pokemon, PokemonSpecies, PokemonStat } from '../api/types.js';
  * Transformed Pokemon data for display
  */
 export interface PokemonDisplay {
+  // Core identification
   id: number;
   name: string;
   displayName: string; // Capitalized name for display
+  generation: number; // Generation number (1-9)
+
+  // Type information
   types: string[];
+
+  // Stats (always loaded)
   stats: {
     hp: number;
     attack: number;
@@ -24,20 +30,35 @@ export interface PokemonDisplay {
     specialDefense: number;
     speed: number;
   };
+
+  // Abilities (basic info always loaded, details optional)
   abilities: {
     name: string;
     isHidden: boolean;
   }[];
+
+  // Physical characteristics
   height: number; // in decimeters
   weight: number; // in hectograms
+
+  // Sprites
   sprite: string | null;
   shinySprite: string | null;
   artworkSprite: string | null;
+
+  // Special status
   isLegendary: boolean;
   isMythical: boolean;
+
+  // Pokedex info
   genus: string;
   flavorText: string;
   evolutionChainUrl: string;
+
+  // Optional sections (lazy-loaded in future phases)
+  moves?: any[]; // Will be typed properly in Phase 3
+  abilityDetails?: any[]; // Will be typed properly in Phase 4
+  typeEffectiveness?: any; // Will be typed properly in Phase 5+
 }
 
 /**
@@ -53,6 +74,7 @@ export function transformPokemon(
     id: pokemon.id,
     name: pokemon.name,
     displayName: capitalizeName(pokemon.name),
+    generation: getGeneration(pokemon.id),
     types: pokemon.types.map(t => t.type.name),
     stats,
     evYield: extractEVYield(pokemon.stats),
@@ -71,6 +93,21 @@ export function transformPokemon(
     flavorText: extractFlavorText(species),
     evolutionChainUrl: species?.evolution_chain?.url || '',
   };
+}
+
+/**
+ * Get generation number based on Pokemon ID
+ */
+function getGeneration(pokemonId: number): number {
+  if (pokemonId <= 151) return 1;   // Kanto
+  if (pokemonId <= 251) return 2;   // Johto
+  if (pokemonId <= 386) return 3;   // Hoenn
+  if (pokemonId <= 493) return 4;   // Sinnoh
+  if (pokemonId <= 649) return 5;   // Unova
+  if (pokemonId <= 721) return 6;   // Kalos
+  if (pokemonId <= 809) return 7;   // Alola
+  if (pokemonId <= 905) return 8;   // Galar
+  return 9;                         // Paldea
 }
 
 /**
