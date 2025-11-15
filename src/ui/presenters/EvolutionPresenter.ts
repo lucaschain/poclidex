@@ -1,41 +1,67 @@
 import { colors } from '../theme.js';
 import type { PokemonDisplay } from '../../models/pokemon.js';
 import type { EvolutionChain } from '../../api/types.js';
-import { pokemonService } from '../../services/pokemonService.js';
+import { pokemonService, type EvolutionStage } from '../../services/pokemonService.js';
 
 /**
  * Presenter for rendering evolution chains
  *
- * Handles parsing and formatting of evolution data
+ * Handles parsing and formatting of evolution data with methods
  */
 export class EvolutionPresenter {
   /**
-   * Render evolution chain
+   * Render evolution chain with methods
    */
   async renderEvolutionChain(
     pokemon: PokemonDisplay,
     chain: EvolutionChain
   ): Promise<string[]> {
-    const stages = pokemonService.parseEvolutionChain(chain);
+    const root = pokemonService.parseEvolutionChainStructured(chain);
     const lines: string[] = [];
 
-    stages.forEach((stage, index) => {
-      if (index > 0) {
-        lines.push('     ↓');
-      }
-
-      const pokemonNames = stage.map(name => {
-        const isCurrent = name === pokemon.name;
-        const displayName = name.charAt(0).toUpperCase() + name.slice(1);
-        return isCurrent
-          ? `{${colors.pokemonYellow}-fg}{bold}[${displayName}]{/bold}{/}`
-          : displayName;
-      }).join(' / ');
-
-      lines.push(pokemonNames);
-    });
+    this.renderStage(root, pokemon.name, lines, '', true);
 
     return lines;
+  }
+
+  /**
+   * Recursively render evolution stage
+   */
+  private renderStage(
+    stage: EvolutionStage,
+    currentPokemon: string,
+    lines: string[],
+    prefix: string,
+    _isRoot: boolean
+  ): void {
+    const isCurrent = stage.species === currentPokemon;
+    const displayName = stage.species.charAt(0).toUpperCase() + stage.species.slice(1);
+
+    const formattedName = isCurrent
+      ? `{${colors.pokemonYellow}-fg}{bold}[${displayName}]{/bold}{/}`
+      : displayName;
+
+    lines.push(prefix + formattedName);
+
+    // Show evolution methods for each branch
+    if (stage.branches.length > 0) {
+      stage.branches.forEach((branch, index) => {
+        const isLast = index === stage.branches.length - 1;
+        const connector = stage.branches.length === 1 ? '     ↓' : (isLast ? ' └─' : ' ├─');
+        const method = branch.method ? ` ${branch.method}` : '';
+
+        if (stage.branches.length === 1) {
+          // Simple linear evolution
+          lines.push(`${prefix}${connector}${method}`);
+          this.renderStage(branch, currentPokemon, lines, prefix, false);
+        } else {
+          // Branch evolution - show method inline with arrow
+          lines.push(`${prefix}${connector}${method} →`);
+          const branchPrefix = prefix + (isLast ? '    ' : ' │  ');
+          this.renderStage(branch, currentPokemon, lines, branchPrefix, false);
+        }
+      });
+    }
   }
 
   /**

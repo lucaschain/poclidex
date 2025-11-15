@@ -4,6 +4,27 @@ import { transformPokemon, type PokemonDisplay } from '../models/pokemon.js';
 import type { PokemonListItem, EvolutionChain, ChainLink } from '../api/types.js';
 
 /**
+ * Evolution stage with species and method information
+ */
+export interface EvolutionStage {
+  species: string;
+  method: string;  // How to evolve into this Pokemon
+  branches: EvolutionStage[];  // Multiple evolution paths
+}
+
+/**
+ * Parsed evolution chain with structured data
+ */
+export interface ParsedEvolutionChain {
+  stages: EvolutionStageGroup[];
+}
+
+export interface EvolutionStageGroup {
+  depth: number;
+  evolutions: EvolutionStage[];
+}
+
+/**
  * Service for managing Pokemon data with caching
  */
 export class PokemonService {
@@ -47,11 +68,13 @@ export class PokemonService {
       return cached;
     }
 
-    // Fetch from API
-    const [pokemon, species] = await Promise.all([
-      pokeAPI.getPokemon(nameOrId),
-      pokeAPI.getPokemonSpecies(nameOrId),
-    ]);
+    // Fetch Pokemon first
+    const pokemon = await pokeAPI.getPokemon(nameOrId);
+
+    // Use the species name from Pokemon response (works for alternate forms!)
+    // e.g., "raichu-alola" Pokemon has species.name "raichu"
+    const speciesName = pokemon.species.name;
+    const species = await pokeAPI.getPokemonSpecies(speciesName);
 
     const transformed = transformPokemon(pokemon, species);
 
@@ -86,7 +109,7 @@ export class PokemonService {
   }
 
   /**
-   * Parse evolution chain into a flat array of Pokemon names
+   * Parse evolution chain into a flat array of Pokemon names (legacy)
    */
   parseEvolutionChain(chain: EvolutionChain): string[][] {
     const stages: string[][] = [];
@@ -110,6 +133,21 @@ export class PokemonService {
   }
 
   /**
+   * Parse evolution chain into structured data with evolution methods
+   */
+  parseEvolutionChainStructured(chain: EvolutionChain): EvolutionStage {
+    const buildStage = (link: ChainLink): EvolutionStage => {
+      return {
+        species: link.species.name,
+        method: this.getEvolutionTrigger(link),
+        branches: link.evolves_to.map(evo => buildStage(evo)),
+      };
+    };
+
+    return buildStage(chain.chain);
+  }
+
+  /**
    * Get evolution trigger description
    */
   getEvolutionTrigger(link: ChainLink): string {
@@ -120,35 +158,112 @@ export class PokemonService {
     const detail = link.evolution_details[0];
     const parts: string[] = [];
 
+    // Level requirement
     if (detail.min_level) {
       parts.push(`Lv.${detail.min_level}`);
     }
 
+    // Evolution item (stones, etc.)
     if (detail.item) {
-      parts.push(detail.item.name.replace(/-/g, ' '));
+      const itemName = detail.item.name.split('-').map(w =>
+        w.charAt(0).toUpperCase() + w.slice(1)
+      ).join(' ');
+      parts.push(itemName);
     }
 
+    // Trade evolution
     if (detail.trigger.name === 'trade') {
-      parts.push('Trade');
+      if (detail.held_item) {
+        const heldName = detail.held_item.name.split('-').map(w =>
+          w.charAt(0).toUpperCase() + w.slice(1)
+        ).join(' ');
+        parts.push(`Trade holding ${heldName}`);
+      } else if (detail.trade_species) {
+        parts.push(`Trade for ${detail.trade_species.name}`);
+      } else {
+        parts.push('Trade');
+      }
     }
 
+    // Happiness/Friendship
     if (detail.min_happiness) {
-      parts.push(`Happiness ${detail.min_happiness}`);
+      parts.push(`Happiness ${detail.min_happiness}+`);
     }
 
+    // Affection (Gen 6+)
+    if (detail.min_affection) {
+      parts.push(`Affection ${detail.min_affection}+`);
+    }
+
+    // Time of day
     if (detail.time_of_day) {
-      parts.push(detail.time_of_day);
+      parts.push(`(${detail.time_of_day.charAt(0).toUpperCase() + detail.time_of_day.slice(1)})`);
     }
 
+    // Known move
     if (detail.known_move) {
-      parts.push(`knows ${detail.known_move.name}`);
+      const moveName = detail.known_move.name.split('-').map(w =>
+        w.charAt(0).toUpperCase() + w.slice(1)
+      ).join(' ');
+      parts.push(`knows ${moveName}`);
     }
 
+    // Known move type
+    if (detail.known_move_type) {
+      parts.push(`knows ${detail.known_move_type.name}-type move`);
+    }
+
+    // Location
     if (detail.location) {
-      parts.push(`at ${detail.location.name}`);
+      const locName = detail.location.name.split('-').map(w =>
+        w.charAt(0).toUpperCase() + w.slice(1)
+      ).join(' ');
+      parts.push(`at ${locName}`);
     }
 
-    return parts.length > 0 ? parts.join(', ') : detail.trigger.name;
+    // Gender requirement
+    if (detail.gender === 1) {
+      parts.push('(Female)');
+    } else if (detail.gender === 2) {
+      parts.push('(Male)');
+    }
+
+    // Stats comparison (Tyrogue)
+    if (detail.relative_physical_stats !== null) {
+      if (detail.relative_physical_stats === 1) {
+        parts.push('(ATK > DEF)');
+      } else if (detail.relative_physical_stats === -1) {
+        parts.push('(ATK < DEF)');
+      } else {
+        parts.push('(ATK = DEF)');
+      }
+    }
+
+    // Party requirements
+    if (detail.party_species) {
+      parts.push(`with ${detail.party_species.name} in party`);
+    }
+
+    if (detail.party_type) {
+      parts.push(`with ${detail.party_type.name}-type in party`);
+    }
+
+    // Weather
+    if (detail.needs_overworld_rain) {
+      parts.push('while raining');
+    }
+
+    // Beauty (Gen 3)
+    if (detail.min_beauty) {
+      parts.push(`Beauty ${detail.min_beauty}+`);
+    }
+
+    // 3DS specific
+    if (detail.turn_upside_down) {
+      parts.push('turn upside down');
+    }
+
+    return parts.length > 0 ? parts.join(' ') : detail.trigger.name;
   }
 
   /**

@@ -15,6 +15,7 @@ export class HomeScreen {
   private searchBox: SearchBox;
   private pokemonList: PokemonList;
   private statusBar: blessed.Widgets.BoxElement;
+  private loadingBox?: blessed.Widgets.BoxElement;
   private screen: blessed.Widgets.Screen;
   private onPokemonSelectCallback?: (pokemonName: string) => Promise<void>;
 
@@ -115,12 +116,53 @@ export class HomeScreen {
 
   private async handlePokemonSelect(name: string): Promise<void> {
     this.searchBox.blur();
-    this.updateStatus(`Loading ${name}...`);
-    this.screen.render();
+    this.showLoading(name);
 
-    if (this.onPokemonSelectCallback) {
-      await this.onPokemonSelectCallback(name);
+    try {
+      if (this.onPokemonSelectCallback) {
+        await this.onPokemonSelectCallback(name);
+      }
+    } finally {
+      this.hideLoading();
     }
+  }
+
+  private showLoading(pokemonName: string): void {
+    // Hide the list
+    this.pokemonList.hide();
+
+    // Create centered loading box
+    this.loadingBox = blessed.box({
+      parent: this.container,
+      top: 'center',
+      left: 'center',
+      width: 50,
+      height: 5,
+      tags: true,
+      border: {
+        type: 'line',
+      },
+      style: {
+        border: {
+          fg: 'yellow',
+        },
+      },
+    });
+
+    const displayName = pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1);
+    this.loadingBox.setContent(`{center}{bold}Loading ${displayName}...{/bold}{/center}`);
+
+    this.updateStatus(`Loading ${pokemonName}...`);
+    this.screen.render();
+  }
+
+  private hideLoading(): void {
+    if (this.loadingBox) {
+      this.loadingBox.destroy();
+      this.loadingBox = undefined;
+    }
+    this.pokemonList.show();
+    this.screen.render();
   }
 
   private updateStatus(message: string): void {

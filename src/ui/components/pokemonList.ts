@@ -158,6 +158,20 @@ export class PokemonList {
   }
 
   /**
+   * Show the list
+   */
+  show(): void {
+    this.list.show();
+  }
+
+  /**
+   * Hide the list
+   */
+  hide(): void {
+    this.list.hide();
+  }
+
+  /**
    * Get the total count
    */
   get count(): number {
