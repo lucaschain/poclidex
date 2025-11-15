@@ -70,6 +70,26 @@ npm run dev
 
 ## Usage
 
+### Shell Completion (Optional)
+
+Enable tab completion for Pokemon names in your shell:
+
+**Bash:**
+```bash
+# Add to ~/.bashrc
+eval "$(poclidex --completion bash)"
+```
+
+**Zsh:**
+```bash
+# Add to ~/.zshrc
+eval "$(poclidex --completion zsh)"
+```
+
+After adding the line, restart your shell or run `source ~/.bashrc` (or `~/.zshrc` for Zsh).
+
+Now you can type `poclidex char<TAB>` and it will autocomplete to Pokemon names like `charizard`, `charmander`, etc.
+
 ### Navigation
 
 **Home Screen (Pokemon List):**

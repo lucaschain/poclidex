@@ -1,12 +1,117 @@
 #!/usr/bin/env node
 
 import blessed from 'blessed';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { theme, colors } from './ui/theme.js';
 import { HomeScreen } from './ui/screens/homeScreen.js';
 import { DetailScreen } from './ui/screens/detailScreen.js';
 import { HelpPanel } from './ui/components/HelpPanel.js';
 import { generationService } from './services/generationService.js';
 import { logTerminalInfo } from './utils/terminalDetection.js';
+
+// Get package.json for version info
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'));
+
+// Handle --help flag
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log(`
+poclidex v${packageJson.version} - Interactive CLI Pokedex
+
+Usage:
+  poclidex [pokemon-name]     Launch directly to a Pokemon's detail page
+  poclidex                    Launch the interactive search interface
+
+Options:
+  -h, --help                  Show this help message
+  -v, --version               Show version number
+  --completion [bash|zsh]     Generate shell completion script
+  --debug-colors              Show terminal color capabilities
+
+Examples:
+  poclidex                    # Start interactive mode
+  poclidex pikachu            # View Pikachu's details
+  poclidex charizard          # View Charizard's details
+
+Shell Completion:
+  eval "$(poclidex --completion bash)"   # Enable bash completion
+  eval "$(poclidex --completion zsh)"    # Enable zsh completion
+
+Keyboard Shortcuts:
+  ?                           Show help panel with all shortcuts
+  Ctrl+S                      Search / Return to search
+  F1-F9                       Filter by generation
+  Ctrl+C                      Quit
+`);
+  process.exit(0);
+}
+
+// Handle --version flag
+if (process.argv.includes('--version') || process.argv.includes('-v')) {
+  console.log(packageJson.version);
+  process.exit(0);
+}
+
+// Handle --completion flag for shell completion
+if (process.argv.includes('--completion')) {
+  const shell = process.argv[process.argv.indexOf('--completion') + 1] || 'bash';
+
+  (async () => {
+    try {
+      const { pokemonService } = await import('./services/pokemonService.js');
+      const pokemonList = await pokemonService.loadPokemonList();
+      const names = pokemonList.map(p => p.name).join(' ');
+
+      if (shell === 'bash') {
+        console.log(`# Bash completion for poclidex
+# Add this to your ~/.bashrc or ~/.bash_profile:
+# eval "$(poclidex --completion bash)"
+
+_poclidex_completions() {
+  local cur="\${COMP_WORDS[COMP_CWORD]}"
+
+  if [ "\${COMP_CWORD}" -eq 1 ]; then
+    COMPREPLY=( $(compgen -W "${names}" -- "$cur") )
+  fi
+}
+
+complete -F _poclidex_completions poclidex
+`);
+      } else if (shell === 'zsh') {
+        const zshList = pokemonList.map(p => `'${p.name}'`).join('\n    ');
+        console.log(`# Zsh completion for poclidex
+# Add this to your ~/.zshrc:
+# eval "$(poclidex --completion zsh)"
+
+#compdef poclidex
+
+_poclidex() {
+  local -a pokemon_list
+  pokemon_list=(
+    ${zshList}
+  )
+
+  _describe 'pokemon' pokemon_list
+}
+
+_poclidex
+`);
+      } else {
+        console.error('Unsupported shell. Use: bash or zsh');
+        process.exit(1);
+      }
+      process.exit(0);
+    } catch (error) {
+      console.error('Error loading Pokemon list:', error);
+      process.exit(1);
+    }
+  })();
+  // Don't continue execution
+  await new Promise(() => {});
+}
 
 // Check for debug colors flag
 if (process.argv.includes('--debug-colors')) {
@@ -15,7 +120,9 @@ if (process.argv.includes('--debug-colors')) {
 }
 
 // Parse CLI arguments for direct Pokemon launch
-const cliPokemonName = process.argv[2];
+// Filter out flags (anything starting with - or --)
+const args = process.argv.slice(2).filter(arg => !arg.startsWith('-'));
+const cliPokemonName = args[0];
 
 // Create the blessed screen
 const screen = blessed.screen({
