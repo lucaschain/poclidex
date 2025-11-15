@@ -62,6 +62,9 @@ export class PokemonRepository implements IPokemonRepository {
           const id = this.extractIdFromUrl(p.url);
           return id >= genRange.start && id <= genRange.end;
         });
+      } else {
+        // Invalid generation number - return empty array
+        filtered = [];
       }
     }
 

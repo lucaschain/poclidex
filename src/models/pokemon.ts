@@ -98,7 +98,8 @@ export function transformPokemon(
 /**
  * Get generation number based on Pokemon ID
  */
-function getGeneration(pokemonId: number): number {
+export function getGeneration(pokemonId: number): number {
+  if (pokemonId < 1 || pokemonId > 1025) return 1;  // Invalid IDs default to Gen 1
   if (pokemonId <= 151) return 1;   // Kanto
   if (pokemonId <= 251) return 2;   // Johto
   if (pokemonId <= 386) return 3;   // Hoenn
@@ -107,13 +108,13 @@ function getGeneration(pokemonId: number): number {
   if (pokemonId <= 721) return 6;   // Kalos
   if (pokemonId <= 809) return 7;   // Alola
   if (pokemonId <= 905) return 8;   // Galar
-  return 9;                         // Paldea
+  return 9;                         // Paldea (906-1025)
 }
 
 /**
  * Extract base stats from API format
  */
-function extractStats(stats: PokemonStat[]) {
+export function extractStats(stats: PokemonStat[]) {
   const statMap: Record<string, number> = {};
   stats.forEach(s => {
     statMap[s.stat.name] = s.base_stat;
@@ -132,7 +133,7 @@ function extractStats(stats: PokemonStat[]) {
 /**
  * Extract EV yield from API format
  */
-function extractEVYield(stats: PokemonStat[]) {
+export function extractEVYield(stats: PokemonStat[]) {
   const evMap: Record<string, number> = {};
   stats.forEach(s => {
     evMap[s.stat.name] = s.effort;
