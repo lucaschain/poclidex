@@ -1,0 +1,35 @@
+{
+  "name": "pokedex",
+  "version": "1.0.0",
+  "description": "Interactive CLI Pokedex with fuzzy search, ASCII art sprites, and evolution chains",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "pokedex": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc && node dist/index.js",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "pokemon",
+    "pokedex",
+    "cli",
+    "terminal",
+    "ascii"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "fuzzysort": "^3.1.0",
+    "pokedex-promise-v2": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/blessed": "^0.1.25",
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  }
+}
