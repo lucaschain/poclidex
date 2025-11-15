@@ -2,6 +2,8 @@
 
 An interactive command-line Pokedex application built with TypeScript, featuring fuzzy search, ASCII art sprites, and comprehensive Pokemon data.
 
+![Poclidex Screenshot](docs/screenshot.png)
+
 ## Features
 
 - **All Pokemon Generations**: Access data for 1000+ Pokemon from all generations

@@ -24,6 +24,7 @@ dist/**/*.old.d.ts.map
 # Development files
 .claude/
 CLAUDE.md
+docs/
 .git/
 .github/
 .vscode/
