@@ -28,6 +28,12 @@ export class OverviewSection extends BaseDetailSection {
       border: {
         type: 'line',
       },
+      padding: {
+        left: 2,
+        right: 2,
+        top: 1,
+        bottom: 0,
+      },
     });
 
     super('overview', widget);

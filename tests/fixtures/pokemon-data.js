@@ -43,9 +43,17 @@ export const mockPikachuPokemon = {
     ],
     sprites: {
         front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
+        front_shiny: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/25.png',
+        front_female: null,
+        front_shiny_female: null,
+        back_default: null,
+        back_shiny: null,
+        back_female: null,
+        back_shiny_female: null,
         other: {
             'official-artwork': {
                 front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png',
+                front_shiny: null,
             },
         },
     },
@@ -78,12 +86,68 @@ export const mockPikachuPokemon = {
 export const mockPikachuSpecies = {
     id: 25,
     name: 'pikachu',
+    order: 35,
+    gender_rate: 4,
+    capture_rate: 190,
+    base_happiness: 50,
+    is_baby: false,
+    is_legendary: false,
+    is_mythical: false,
+    hatch_counter: 10,
+    has_gender_differences: true,
+    forms_switchable: false,
+    growth_rate: {
+        name: 'medium',
+        url: 'https://pokeapi.co/api/v2/growth-rate/2/',
+    },
+    pokedex_numbers: [
+        {
+            entry_number: 25,
+            pokedex: {
+                name: 'national',
+                url: 'https://pokeapi.co/api/v2/pokedex/1/',
+            },
+        },
+    ],
+    egg_groups: [
+        {
+            name: 'field',
+            url: 'https://pokeapi.co/api/v2/egg-group/8/',
+        },
+        {
+            name: 'fairy',
+            url: 'https://pokeapi.co/api/v2/egg-group/6/',
+        },
+    ],
+    color: {
+        name: 'yellow',
+        url: 'https://pokeapi.co/api/v2/pokemon-color/10/',
+    },
+    shape: {
+        name: 'quadruped',
+        url: 'https://pokeapi.co/api/v2/pokemon-shape/8/',
+    },
+    evolves_from_species: {
+        name: 'pichu',
+        url: 'https://pokeapi.co/api/v2/pokemon-species/172/',
+    },
     generation: {
         name: 'generation-i',
         url: 'https://pokeapi.co/api/v2/generation/1/',
     },
-    is_legendary: false,
-    is_mythical: false,
+    habitat: {
+        name: 'forest',
+        url: 'https://pokeapi.co/api/v2/pokemon-habitat/3/',
+    },
+    names: [
+        {
+            name: 'Pikachu',
+            language: {
+                name: 'en',
+                url: 'https://pokeapi.co/api/v2/language/9/',
+            },
+        },
+    ],
     genera: [
         {
             genus: 'Mouse Pokémon',
@@ -112,7 +176,9 @@ export const mockPikachuSpecies = {
 };
 export const mockEvolutionChain = {
     id: 10,
+    baby_trigger_item: null,
     chain: {
+        is_baby: true,
         species: {
             name: 'pichu',
             url: 'https://pokeapi.co/api/v2/pokemon-species/172/',
@@ -120,6 +186,7 @@ export const mockEvolutionChain = {
         evolution_details: [],
         evolves_to: [
             {
+                is_baby: false,
                 species: {
                     name: 'pikachu',
                     url: 'https://pokeapi.co/api/v2/pokemon-species/25/',
@@ -151,6 +218,7 @@ export const mockEvolutionChain = {
                 ],
                 evolves_to: [
                     {
+                        is_baby: false,
                         species: {
                             name: 'raichu',
                             url: 'https://pokeapi.co/api/v2/pokemon-species/26/',

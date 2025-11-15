@@ -33,7 +33,9 @@ describe('PokemonService - Evolution Chain Parsing', () => {
     it('should handle single-stage Pokemon (no evolutions)', () => {
       const singleStageChain = {
         id: 1,
+        baby_trigger_item: null,
         chain: {
+          is_baby: false,
           species: { name: 'lapras', url: '' },
           evolution_details: [],
           evolves_to: [],
@@ -49,21 +51,26 @@ describe('PokemonService - Evolution Chain Parsing', () => {
     it('should handle branching evolutions (Eevee)', () => {
       const eeveeChain = {
         id: 67,
+        baby_trigger_item: null,
         chain: {
+          is_baby: false,
           species: { name: 'eevee', url: '' },
           evolution_details: [],
           evolves_to: [
             {
+              is_baby: false,
               species: { name: 'vaporeon', url: '' },
               evolution_details: [],
               evolves_to: [],
             },
             {
+              is_baby: false,
               species: { name: 'jolteon', url: '' },
               evolution_details: [],
               evolves_to: [],
             },
             {
+              is_baby: false,
               species: { name: 'flareon', url: '' },
               evolution_details: [],
               evolves_to: [],
@@ -109,7 +116,9 @@ describe('PokemonService - Evolution Chain Parsing', () => {
     it('should handle single-stage Pokemon', () => {
       const singleStageChain = {
         id: 1,
+        baby_trigger_item: null,
         chain: {
+          is_baby: false,
           species: { name: 'lapras', url: '' },
           evolution_details: [],
           evolves_to: [],
@@ -127,11 +136,14 @@ describe('PokemonService - Evolution Chain Parsing', () => {
     it('should handle branching evolutions', () => {
       const eeveeChain = {
         id: 67,
+        baby_trigger_item: null,
         chain: {
+          is_baby: false,
           species: { name: 'eevee', url: '' },
           evolution_details: [],
           evolves_to: [
             {
+              is_baby: false,
               species: { name: 'vaporeon', url: '' },
               evolution_details: [
                 {
@@ -143,6 +155,7 @@ describe('PokemonService - Evolution Chain Parsing', () => {
               evolves_to: [],
             },
             {
+              is_baby: false,
               species: { name: 'jolteon', url: '' },
               evolution_details: [
                 {
@@ -171,6 +184,7 @@ describe('PokemonService - Evolution Chain Parsing', () => {
   describe('getEvolutionTrigger - Basic functionality', () => {
     it('should return empty string for empty evolution details', () => {
       const link = {
+        is_baby: false,
         species: { name: 'test', url: '' },
         evolution_details: [],
         evolves_to: [],
@@ -183,6 +197,7 @@ describe('PokemonService - Evolution Chain Parsing', () => {
 
     it('should format level-based evolution', () => {
       const link = {
+        is_baby: false,
         species: { name: 'ivysaur', url: '' },
         evolution_details: [
           {
@@ -202,6 +217,7 @@ describe('PokemonService - Evolution Chain Parsing', () => {
 
     it('should format item-based evolution (Thunder Stone)', () => {
       const link = {
+        is_baby: false,
         species: { name: 'raichu', url: '' },
         evolution_details: [
           {
@@ -220,6 +236,7 @@ describe('PokemonService - Evolution Chain Parsing', () => {
 
     it('should format trade evolution', () => {
       const link = {
+        is_baby: false,
         species: { name: 'gengar', url: '' },
         evolution_details: [
           {
@@ -237,6 +254,7 @@ describe('PokemonService - Evolution Chain Parsing', () => {
 
     it('should format happiness evolution', () => {
       const link = {
+        is_baby: false,
         species: { name: 'pikachu', url: '' },
         evolution_details: [
           {

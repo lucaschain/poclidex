@@ -30,6 +30,12 @@ export class EvolutionSection extends BaseDetailSection {
       border: {
         type: 'line',
       },
+      padding: {
+        left: 1,
+        right: 1,
+        top: 2,
+        bottom: 0,
+      },
     });
 
     super('evolution', widget);

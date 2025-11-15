@@ -28,6 +28,12 @@ export class StatsSection extends BaseDetailSection {
       border: {
         type: 'line',
       },
+      padding: {
+        left: 2,
+        right: 2,
+        top: 1,
+        bottom: 0,
+      },
     });
 
     super('stats', widget);
@@ -37,15 +43,15 @@ export class StatsSection extends BaseDetailSection {
   async update(pokemon: PokemonDisplay): Promise<void> {
     const lines: string[] = [];
 
-    // Render stats using presenter
-    lines.push(...this.presenter.renderStats(pokemon));
+    // Render stats using presenter with widget for dynamic width calculation
+    lines.push(...this.presenter.renderStats(pokemon, this.widget));
 
     // Show loading message for abilities
     this.widget.setContent(lines.join('\n') + '\n\n{gray-fg}Loading abilities...{/}');
     this.widget.screen.render();
 
-    // Render abilities using presenter (async)
-    const abilityLines = await this.presenter.renderAbilities(pokemon);
+    // Render abilities using presenter (async) with widget for dynamic width calculation
+    const abilityLines = await this.presenter.renderAbilities(pokemon, this.widget);
     lines.push(...abilityLines);
 
     this.widget.setContent(lines.join('\n'));

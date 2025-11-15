@@ -13,7 +13,6 @@ export class MovesSection extends BaseDetailSection {
   private descriptionBox: blessed.Widgets.BoxElement;
   private presenter: MovesPresenter;
   private moves: import('../../../repositories/IPokemonRepository.js').MoveData[] = [];
-  private selectedIndex: number = 0;
 
   constructor(parent: blessed.Widgets.Node) {
     // Create container to hold table and description
@@ -31,7 +30,7 @@ export class MovesSection extends BaseDetailSection {
       left: 0,
       width: '100%',
       height: '80%',
-      keys: true,
+      keys: false, // Disable default key handlers, we'll handle them manually
       mouse: true,
       tags: true,
       scrollable: true,
@@ -90,30 +89,38 @@ export class MovesSection extends BaseDetailSection {
     this.descriptionBox = descriptionBox;
     this.presenter = new MovesPresenter();
 
-    // Update description when selection changes
-    this.table.on('select', () => {
-      this.updateDescription();
-    });
-
-    // Add vim-style navigation
-    this.table.key(['j', 'down'], () => {
+    // Override arrow keys and vim keys to update description after navigation
+    this.table.key(['down', 'j'], () => {
       this.table.down(1);
-      this.selectedIndex = Math.min(this.selectedIndex + 1, this.moves.length - 1);
-      this.updateDescription();
-      this.table.screen.render();
+      // Use setImmediate to ensure description updates after blessed updates selection
+      setImmediate(() => {
+        this.updateDescription();
+        this.table.screen.render();
+      });
     });
 
-    this.table.key(['k', 'up'], () => {
+    this.table.key(['up', 'k'], () => {
       this.table.up(1);
-      this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
-      this.updateDescription();
-      this.table.screen.render();
+      // Use setImmediate to ensure description updates after blessed updates selection
+      setImmediate(() => {
+        this.updateDescription();
+        this.table.screen.render();
+      });
     });
   }
 
   private updateDescription(): void {
-    if (this.selectedIndex >= 0 && this.selectedIndex < this.moves.length) {
-      const move = this.moves[this.selectedIndex];
+    // Get the current selected row from the table
+    // @ts-ignore - blessed types don't fully expose selected property
+    const tableSelectedIndex = this.table.selected as number;
+
+    // Account for header row (first row is index 0, which is the header)
+    // So the first actual move is at table index 1, which maps to moves[0]
+    const moveIndex = tableSelectedIndex - 1;
+
+    // Update description if we have a valid move
+    if (moveIndex >= 0 && moveIndex < this.moves.length) {
+      const move = this.moves[moveIndex];
       const description = this.presenter.getDescription(move);
       this.descriptionBox.setContent(description);
     } else {
@@ -129,7 +136,6 @@ export class MovesSection extends BaseDetailSection {
     // Show loading state
     this.table.setData([['Loading moves...']]);
     this.descriptionBox.setContent('');
-    this.selectedIndex = 0;
     this.table.screen.render();
 
     try {
@@ -142,11 +148,12 @@ export class MovesSection extends BaseDetailSection {
       // Set table data
       this.table.setData(tableData);
 
-      // Show description for first move (if any)
-      if (this.moves.length > 0) {
-        this.selectedIndex = 0;
-        this.descriptionBox.setContent(this.presenter.getDescription(this.moves[0]));
-      }
+      // Select the first move (index 1, since 0 is the header)
+      // @ts-ignore - blessed types don't fully expose select method
+      this.table.select(1);
+
+      // Update description for the first move
+      this.updateDescription();
 
       this.table.screen.render();
     } catch (error) {
