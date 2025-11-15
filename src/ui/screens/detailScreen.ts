@@ -278,6 +278,12 @@ export class DetailScreen {
       }
 
       this.show();
+
+      // Focus the active tab to ensure keyboard navigation works
+      const activeSection = this.tabbedPanel.getActiveSection();
+      if (activeSection && activeSection.focus) {
+        activeSection.focus();
+      }
     } catch (error) {
       // Only show error if this is still the current operation
       if (loadId === this.currentLoadId) {
