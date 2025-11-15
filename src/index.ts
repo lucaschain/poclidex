@@ -4,7 +4,7 @@ import blessed from 'blessed';
 import { theme, colors } from './ui/theme.js';
 import { HomeScreen } from './ui/screens/homeScreen.js';
 import { DetailScreen } from './ui/screens/detailScreen.js';
-import { imageService } from './services/imageService.js';
+import { HelpPanel } from './ui/components/HelpPanel.js';
 import { generationService } from './services/generationService.js';
 import { logTerminalInfo } from './utils/terminalDetection.js';
 
@@ -86,20 +86,11 @@ const footer = blessed.box({
 function updateFooter(mode: 'home' | 'detail') {
   if (mode === 'home') {
     footer.setContent(
-      '{center}Ctrl+S: Search | Arrow Keys: Navigate | Enter: Select | Q/Ctrl+C: Quit{/center}'
+      '{center}Ctrl+S: Search | Arrow Keys: Navigate | Enter: Select | ?: Help | Ctrl+C: Quit{/center}'
     );
   } else {
-    // Get all current rendering settings
-    const colorSpace = imageService.getCurrentColorSpace().toUpperCase();
-    const colorMode = imageService.getColorMode();
-    const ditherMode = imageService.getCurrentDitherMode();
-    const symbolSet = imageService.getCurrentSymbolSet();
-
     footer.setContent(
-      `{center}Tab/←→: Tabs | 1-4: Direct | ` +
-      `C: Space(${colorSpace}) | P: Colors(${colorMode}) | ` +
-      `D: Dither(${ditherMode}) | S: Symbols(${symbolSet}) | ` +
-      `E: Evo | Ctrl+S: Search | Esc/B: Back | Q: Quit{/center}`
+      '{center}Tab/1-3: Tabs | Esc: Back | Ctrl+S: Search | ?: Help | Ctrl+C: Quit{/center}'
     );
   }
   screen.render();
@@ -130,6 +121,9 @@ const detailScreen = new DetailScreen({
     updateFooter('detail');
   },
 });
+
+// Initialize help panel
+const helpPanel = new HelpPanel(screen);
 
 // Conditional startup based on CLI argument
 if (cliPokemonName) {
@@ -167,6 +161,11 @@ screen.key(['C-s'], () => {
     // On home screen: just focus search
     homeScreen.focusSearch();
   }
+});
+
+// Help panel toggle (? key and Ctrl+H)
+screen.key(['?', 'C-h'], () => {
+  helpPanel.toggle();
 });
 
 // F1-F9: Set session generation

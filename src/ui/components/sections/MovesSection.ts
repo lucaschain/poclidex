@@ -68,7 +68,7 @@ export class MovesSection extends BaseDetailSection {
       top: '80%',
       left: 0,
       width: '100%',
-      height: '20%',
+      height: '20%+1',
       tags: true,
       border: {
         type: 'line',

@@ -3,6 +3,7 @@ import { theme, colors } from '../theme.js';
 import type { PokemonDisplay } from '../../models/pokemon.js';
 import { pokemonRepository } from '../../repositories/PokemonRepository.js';
 import { generationService } from '../../services/generationService.js';
+import { GEN1_SPECIAL_STATS } from '../../constants/gen1Stats.js';
 
 /**
  * Presenter for rendering Pokemon stats
@@ -52,12 +53,25 @@ export class StatPresenter {
     // Calculate available width for dynamic bar sizing
     const availableWidth = this.calculateAvailableWidth(widget);
 
+    // Get effective generation for stat display
+    const sessionGeneration = generationService.getSessionGeneration();
+    const effectiveGeneration = Math.max(sessionGeneration, pokemon.generation);
+
     // Stats with bars
     lines.push(...this.createStatBar('HP', stats.hp, evYield.hp, availableWidth));
     lines.push(...this.createStatBar('Attack', stats.attack, evYield.attack, availableWidth));
     lines.push(...this.createStatBar('Defense', stats.defense, evYield.defense, availableWidth));
-    lines.push(...this.createStatBar('Sp. Atk', stats.specialAttack, evYield.specialAttack, availableWidth));
-    lines.push(...this.createStatBar('Sp. Def', stats.specialDefense, evYield.specialDefense, availableWidth));
+
+    // In Gen 1, there was no Sp. Atk/Sp. Def split - just "Special"
+    if (effectiveGeneration === 1) {
+      // Use historical Gen 1 Special stat if available, otherwise fall back to specialAttack
+      const gen1Special = GEN1_SPECIAL_STATS[pokemon.id] ?? stats.specialAttack;
+      lines.push(...this.createStatBar('Special', gen1Special, evYield.specialAttack, availableWidth));
+    } else {
+      lines.push(...this.createStatBar('Sp. Atk', stats.specialAttack, evYield.specialAttack, availableWidth));
+      lines.push(...this.createStatBar('Sp. Def', stats.specialDefense, evYield.specialDefense, availableWidth));
+    }
+
     lines.push(...this.createStatBar('Speed', stats.speed, evYield.speed, availableWidth));
 
     // Total
@@ -139,21 +153,21 @@ export class StatPresenter {
    */
   private createStatBar(name: string, value: number, ev: number, availableWidth: number): string[] {
     // Calculate dynamic bar width based on available space
-    // Format: "{bold}NAME      {/} VALUE █████░░░░░ +EV"
+    // Format: "{bold}NAME      {/} +EV VALUE █████░░░░░"
     // - Name: 10 chars (padded)
     // - Space: 1 char
+    // - EV text: 6 chars (fixed, e.g., "+3 EV " - always reserve space for alignment)
     // - Value: 3 chars (padded)
     // - Space: 1 char
     // - Bar: variable
-    // - Reserved EV space: 8 chars (fixed for all bars, ensures alignment)
 
     const nameWidth = 10;
     const valueWidth = 3;
-    const spacingWidth = 2; // spaces around value
-    const evReservedSpace = 8; // Fixed space reserved for EV text (e.g., " +3 EV" = 6 chars + margin)
+    const spacingWidth = 1; // space before bar
+    const evReservedSpace = 6; // Fixed space reserved for EV text (ensures alignment)
 
     // All bars use the same width calculation regardless of individual EV values
-    // This ensures all bars end at the same point and EV text aligns vertically
+    // This ensures all bars end at the same point
     const barWidth = Math.max(
       availableWidth - nameWidth - valueWidth - spacingWidth - evReservedSpace,
       10 // Minimum bar width
@@ -164,10 +178,23 @@ export class StatPresenter {
     const empty = barWidth - filled;
 
     const bar = '█'.repeat(filled) + '░'.repeat(empty);
-    const evText = ev > 0 ? ` {${theme.evYield.fg}-fg}+${ev} EV{/}` : '';
+
+    // Create EV section - always reserve 6 chars for alignment
+    // If EV exists: "+N EV " (total 6 chars: text + trailing space)
+    // If no EV: 6 spaces
+    let evSection: string;
+    if (ev > 0) {
+      const evDisplay = `+${ev} EV`;
+      const evLength = evDisplay.length;
+      // Total section is 6 chars: evDisplay length + padding
+      const padding = ' '.repeat(evReservedSpace - evLength);
+      evSection = `{${theme.evYield.fg}-fg}${evDisplay}{/}${padding}`;
+    } else {
+      evSection = ' '.repeat(evReservedSpace);
+    }
 
     return [
-      `{bold}${name.padEnd(10)}{/bold} ${value.toString().padStart(3)} ${bar}${evText}`,
+      `{bold}${name.padEnd(10)}{/bold}${evSection}${value.toString().padStart(3)} ${bar}`,
     ];
   }
 

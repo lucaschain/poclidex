@@ -8,7 +8,6 @@ import type { IDetailSection } from '../components/sections/IDetailSection.js';
 import { SpriteSection } from '../components/sections/SpriteSection.js';
 import { StatsSection } from '../components/sections/StatsSection.js';
 import { OverviewSection } from '../components/sections/OverviewSection.js';
-import { EvolutionSection } from '../components/sections/EvolutionSection.js';
 import { MovesSection } from '../components/sections/MovesSection.js';
 import { TabbedPanel } from '../components/TabbedPanel.js';
 
@@ -34,13 +33,14 @@ export class DetailScreen {
   private screen: blessed.Widgets.Screen;
   private sections: IDetailSection[] = [];
   private tabbedPanel!: TabbedPanel;
-  private evolutionSection!: EvolutionSection;
+  private overviewSection!: OverviewSection;
   private spriteSection!: SpriteSection;
   private onBackCallback?: () => void;
   private onEvolutionSelectCallback?: (pokemonName: string) => Promise<void>;
   private onFooterUpdateCallback?: () => void;
   private currentPokemon?: PokemonDisplay;
   private loadingBox?: blessed.Widgets.BoxElement;
+  private currentLoadId = 0;
 
   constructor(options: DetailScreenOptions) {
     this.screen = options.screen;
@@ -72,7 +72,7 @@ export class DetailScreen {
   /**
    * Initialize all detail sections with 2-column layout
    * Left: Pokemon sprite (50%)
-   * Right: Tabbed panel with Overview/Stats/Evolution/Moves (50%)
+   * Right: Tabbed panel with Overview/Stats/Moves (50%)
    */
   private initializeSections(): void {
     // Header for Pokemon name and types (spans full width)
@@ -144,16 +144,14 @@ export class DetailScreen {
     });
 
     // Create sections for tabs
-    const overviewSection = new OverviewSection(rightColumn);
+    this.overviewSection = new OverviewSection(rightColumn);
     const statsSection = new StatsSection(rightColumn);
-    this.evolutionSection = new EvolutionSection(rightColumn);
     const movesSection = new MovesSection(rightColumn);
 
-    // Add tabs (1-4 shortcuts)
-    this.tabbedPanel.addTab(overviewSection, 'Overview', '1');
+    // Add tabs (1-3 shortcuts) - Evolution is now part of Overview
+    this.tabbedPanel.addTab(this.overviewSection, 'Overview', '1');
     this.tabbedPanel.addTab(statsSection, 'Stats', '2');
-    this.tabbedPanel.addTab(this.evolutionSection, 'Evolution', '3');
-    this.tabbedPanel.addTab(movesSection, 'Moves', '4');
+    this.tabbedPanel.addTab(movesSection, 'Moves', '3');
 
     // Only track sprite section (tabs are managed by TabbedPanel)
     this.sections = [this.spriteSection];
@@ -252,11 +250,20 @@ export class DetailScreen {
    * Display Pokemon details
    */
   async showPokemon(name: string): Promise<void> {
+    // Track this operation to prevent race conditions from rapid F key presses
+    const loadId = ++this.currentLoadId;
+
     this.showLoading(name);
 
     try {
       // Load Pokemon data
       const pokemon = await pokemonRepository.getPokemonDetails(name);
+
+      // Ignore stale results if a newer operation has started
+      if (loadId !== this.currentLoadId) {
+        return;
+      }
+
       this.currentPokemon = pokemon;
 
       // Update header with Pokemon name and types
@@ -265,11 +272,22 @@ export class DetailScreen {
       // Update all sections with Pokemon data
       await this.updateAllSections(pokemon);
 
+      // Check again after async operations
+      if (loadId !== this.currentLoadId) {
+        return;
+      }
+
       this.show();
     } catch (error) {
-      this.displayError(error as Error);
+      // Only show error if this is still the current operation
+      if (loadId === this.currentLoadId) {
+        this.displayError(error as Error);
+      }
     } finally {
-      this.hideLoading();
+      // Only hide loading if this is still the current operation
+      if (loadId === this.currentLoadId) {
+        this.hideLoading();
+      }
     }
   }
 
@@ -309,7 +327,7 @@ export class DetailScreen {
    * Navigate to evolution chain Pokemon
    */
   private async navigateToEvolution(): Promise<void> {
-    const evolutionOptions = this.evolutionSection.getEvolutionOptions();
+    const evolutionOptions = this.overviewSection.getEvolutionOptions();
 
     if (!evolutionOptions || evolutionOptions.length === 0) {
       return;
@@ -345,7 +363,7 @@ export class DetailScreen {
       width: 40,
       height: options.length + 4,
       keys: true,
-      vi: true,
+      vi: false,
       mouse: true,
       tags: true,
       label: ' Select Evolution ',
@@ -398,6 +416,12 @@ export class DetailScreen {
    * Show loading indicator
    */
   private showLoading(pokemonName: string): void {
+    // Destroy existing loading box if present to prevent orphans
+    if (this.loadingBox) {
+      this.loadingBox.destroy();
+      this.loadingBox = undefined;
+    }
+
     // Create centered loading box overlay
     this.loadingBox = blessed.box({
       parent: this.screen,
