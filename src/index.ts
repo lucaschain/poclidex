@@ -12,6 +12,9 @@ if (process.argv.includes('--debug-colors')) {
   process.exit(0);
 }
 
+// Parse CLI arguments for direct Pokemon launch
+const cliPokemonName = process.argv[2];
+
 // Create the blessed screen
 const screen = blessed.screen({
   smartCSR: true,
@@ -105,8 +108,24 @@ const detailScreen = new DetailScreen({
   },
 });
 
-// Set initial footer
-updateFooter('home');
+// Conditional startup based on CLI argument
+if (cliPokemonName) {
+  // Launch directly to detail screen with provided Pokemon name
+  detailScreen.showPokemon(cliPokemonName)
+    .then(() => {
+      updateFooter('detail');
+      screen.render();
+    })
+    .catch((_error) => {
+      console.error(`Error: Could not find Pokemon "${cliPokemonName}"`);
+      console.error('Usage: pokedex [pokemon-name]');
+      process.exit(1);
+    });
+} else {
+  // Normal startup - show home screen
+  updateFooter('home');
+  screen.render();
+}
 
 // Global hotkeys
 screen.key(['C-c'], () => {
@@ -126,9 +145,6 @@ screen.key(['C-s'], () => {
     homeScreen.focusSearch();
   }
 });
-
-// Initial render
-screen.render();
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {
