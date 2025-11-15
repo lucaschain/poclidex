@@ -5,6 +5,7 @@ import { theme, colors } from './ui/theme.js';
 import { HomeScreen } from './ui/screens/homeScreen.js';
 import { DetailScreen } from './ui/screens/detailScreen.js';
 import { imageService } from './services/imageService.js';
+import { generationService } from './services/generationService.js';
 import { logTerminalInfo } from './utils/terminalDetection.js';
 
 // Check for debug colors flag
@@ -165,6 +166,70 @@ screen.key(['C-s'], () => {
   } else {
     // On home screen: just focus search
     homeScreen.focusSearch();
+  }
+});
+
+// F1-F9: Set session generation
+screen.key(['f1'], async () => {
+  generationService.setSessionGeneration(1);
+  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
+    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  }
+});
+
+screen.key(['f2'], async () => {
+  generationService.setSessionGeneration(2);
+  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
+    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  }
+});
+
+screen.key(['f3'], async () => {
+  generationService.setSessionGeneration(3);
+  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
+    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  }
+});
+
+screen.key(['f4'], async () => {
+  generationService.setSessionGeneration(4);
+  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
+    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  }
+});
+
+screen.key(['f5'], async () => {
+  generationService.setSessionGeneration(5);
+  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
+    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  }
+});
+
+screen.key(['f6'], async () => {
+  generationService.setSessionGeneration(6);
+  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
+    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  }
+});
+
+screen.key(['f7'], async () => {
+  generationService.setSessionGeneration(7);
+  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
+    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  }
+});
+
+screen.key(['f8'], async () => {
+  generationService.setSessionGeneration(8);
+  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
+    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  }
+});
+
+screen.key(['f9'], async () => {
+  generationService.setSessionGeneration(9);
+  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
+    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
   }
 });
 

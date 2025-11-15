@@ -1,4 +1,5 @@
-import type { Pokemon, PokemonSpecies, PokemonStat } from '../api/types.js';
+import type { Pokemon, PokemonSpecies, PokemonStat, NamedAPIResource } from '../api/types.js';
+import { applyHistoricalAbilityChanges } from '../constants/abilityChanges.js';
 
 /**
  * Transformed Pokemon data for display
@@ -63,25 +64,61 @@ export interface PokemonDisplay {
 
 /**
  * Transform API Pokemon data into display format
+ *
+ * @param pokemon - Raw Pokemon data from API
+ * @param species - Species data (optional)
+ * @param filterGeneration - Optional generation to filter data by (types, abilities, etc.)
  */
 export function transformPokemon(
   pokemon: Pokemon,
-  species?: PokemonSpecies
+  species?: PokemonSpecies,
+  filterGeneration?: number
 ): PokemonDisplay {
   const stats = extractStats(pokemon.stats);
+
+  // Extract types, filtering by generation if specified
+  const types = filterGeneration !== undefined
+    ? extractTypesByGeneration(pokemon, filterGeneration)
+    : pokemon.types.map(t => t.type.name);
+
+  // Extract abilities, filtering by generation if specified
+  let abilitiesWithSlot = pokemon.abilities.filter(a => {
+    // Filter out hidden abilities before Gen 5 (only when filtering by generation)
+    if (filterGeneration !== undefined && filterGeneration < 5 && a.is_hidden) {
+      return false;
+    }
+    return true;
+  }).map(a => ({
+    name: a.ability.name,
+    isHidden: a.is_hidden,
+    slot: a.slot,
+  }));
+
+  // Apply historical ability changes if filtering by generation
+  let finalAbilities: Array<{ name: string; isHidden: boolean }>;
+  if (filterGeneration !== undefined) {
+    finalAbilities = applyHistoricalAbilityChanges(
+      pokemon.id,
+      pokemon.name,
+      abilitiesWithSlot,
+      filterGeneration
+    );
+  } else {
+    finalAbilities = abilitiesWithSlot.map(a => ({
+      name: a.name,
+      isHidden: a.isHidden,
+    }));
+  }
 
   return {
     id: pokemon.id,
     name: pokemon.name,
     displayName: capitalizeName(pokemon.name),
     generation: getGeneration(pokemon.id),
-    types: pokemon.types.map(t => t.type.name),
+    types,
     stats,
     evYield: extractEVYield(pokemon.stats),
-    abilities: pokemon.abilities.map(a => ({
-      name: a.ability.name,
-      isHidden: a.is_hidden,
-    })),
+    abilities: finalAbilities,
     height: pokemon.height,
     weight: pokemon.weight,
     sprite: pokemon.sprites.front_default,
@@ -93,6 +130,54 @@ export function transformPokemon(
     flavorText: extractFlavorText(species),
     evolutionChainUrl: species?.evolution_chain?.url || '',
   };
+}
+
+/**
+ * Extract types for a Pokemon, filtering by generation if past_types exist.
+ *
+ * Handles historical type changes such as:
+ * - Fairy type added in Generation VI (22 Pokemon affected)
+ * - Magnemite/Magneton gained Steel type in Generation II
+ *
+ * @param pokemon - Raw Pokemon data
+ * @param filterGeneration - Generation to filter by
+ * @returns Array of type names for the specified generation
+ */
+function extractTypesByGeneration(pokemon: Pokemon, filterGeneration: number): string[] {
+  // If no past_types or viewing latest generation, use current types
+  if (!pokemon.past_types || pokemon.past_types.length === 0 || filterGeneration >= 9) {
+    return pokemon.types.map(t => t.type.name);
+  }
+
+  // Look through past_types to find the types that existed in the target generation
+  // past_types contains the types BEFORE a certain generation change
+  // So if past_types has an entry for "generation-vi", those are the types before Gen 6
+
+  for (const pastType of pokemon.past_types) {
+    const changeGeneration = extractGenerationNumber(pastType.generation);
+
+    // If the change happened AFTER our target generation,
+    // use the past types (i.e., types before the change)
+    if (changeGeneration > filterGeneration) {
+      return pastType.types.map(t => t.type.name);
+    }
+  }
+
+  // If we got here, all changes happened before or at target generation
+  // Use current types
+  return pokemon.types.map(t => t.type.name);
+}
+
+/**
+ * Extract generation number from a NamedAPIResource URL.
+ *
+ * @param generationResource - Generation resource from API
+ * @returns Generation number (1-9)
+ */
+function extractGenerationNumber(generationResource: NamedAPIResource): number {
+  // Extract generation number from URL like ".../generation/6/"
+  const match = generationResource.url.match(/\/generation\/(\d+)\//);
+  return match ? parseInt(match[1], 10) : 9;
 }
 
 /**

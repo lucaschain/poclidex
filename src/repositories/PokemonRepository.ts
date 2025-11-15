@@ -2,6 +2,7 @@ import { pokemonService } from '../services/pokemonService.js';
 import { pokeAPI } from '../api/pokeapi.js';
 import type { PokemonListItem, EvolutionChain } from '../api/types.js';
 import type { PokemonDisplay } from '../models/pokemon.js';
+import { transformPokemon } from '../models/pokemon.js';
 import type {
   IPokemonRepository,
   FilterOptions,
@@ -9,6 +10,8 @@ import type {
   AbilityDetail,
 } from './IPokemonRepository.js';
 import { LRUCache } from '../utils/cache.js';
+import { generationService } from '../services/generationService.js';
+import { getGenerationFromVersionGroup } from '../constants/versionGroups.js';
 
 /**
  * Generation ranges (based on National Dex numbers)
@@ -79,10 +82,26 @@ export class PokemonRepository implements IPokemonRepository {
   }
 
   /**
-   * Get detailed Pokemon information
+   * Get detailed Pokemon information with optional generation filtering
    */
   async getPokemonDetails(nameOrId: string | number): Promise<PokemonDisplay> {
-    return pokemonService.getPokemonDetails(nameOrId);
+    const sessionGeneration = generationService.getSessionGeneration();
+
+    // If viewing latest generation (9), use cached service version
+    if (sessionGeneration === 9) {
+      return pokemonService.getPokemonDetails(nameOrId);
+    }
+
+    // For historical generations, fetch raw data and apply filtering
+    const pokemon = await pokeAPI.getPokemon(nameOrId);
+    const species = await pokeAPI.getPokemonSpecies(pokemon.species.name);
+
+    // Get the effective generation (max of session gen and Pokemon's release gen)
+    const pokemonGeneration = this.getGeneration(pokemon.id);
+    const effectiveGeneration = Math.max(sessionGeneration, pokemonGeneration);
+
+    // Transform with generation filtering
+    return transformPokemon(pokemon, species, effectiveGeneration);
   }
 
   /**
@@ -93,29 +112,47 @@ export class PokemonRepository implements IPokemonRepository {
   }
 
   /**
-   * Get moves for a Pokemon
+   * Get moves for a Pokemon, optionally filtered by generation
    */
-  async getMoves(pokemonId: number, _generation?: number): Promise<MoveData[]> {
+  async getMoves(pokemonId: number, generation?: number): Promise<MoveData[]> {
+    // Use session generation if not specified
+    const filterGeneration = generation ?? generationService.getSessionGeneration();
+
+    // Get effective generation (max of filter and Pokemon's release)
+    const pokemonGeneration = this.getGeneration(pokemonId);
+    const effectiveGeneration = Math.max(filterGeneration, pokemonGeneration);
+
     // Fetch Pokemon data
     const pokemon = await pokeAPI.getPokemon(pokemonId);
 
     // Filter to main learn methods
     const mainMethods = ['level-up', 'machine', 'egg', 'tutor'];
 
-    // Get latest version group details for each move
+    // Get move details for each move, filtered by generation
     const moveMap = new Map<string, { method: string; level: number }>();
 
     for (const pokemonMove of pokemon.moves) {
-      // Get the latest version group detail with a main learn method
-      const validDetails = pokemonMove.version_group_details
-        .filter(d => mainMethods.includes(d.move_learn_method.name))
-        .sort((_a, _b) => {
-          // Sort by version group (latest first), then by level
-          // For simplicity, just use the first valid one
-          return 0;
+      // Filter version group details by generation and learn method
+      let validDetails = pokemonMove.version_group_details
+        .filter(d => {
+          // Filter by learn method
+          if (!mainMethods.includes(d.move_learn_method.name)) {
+            return false;
+          }
+
+          // Filter by generation
+          const vgGeneration = getGenerationFromVersionGroup(d.version_group.name);
+          return vgGeneration <= effectiveGeneration;
+        })
+        .sort((a, b) => {
+          // Sort by generation (latest first within allowed range)
+          const genA = getGenerationFromVersionGroup(a.version_group.name);
+          const genB = getGenerationFromVersionGroup(b.version_group.name);
+          return genB - genA;
         });
 
       if (validDetails.length > 0) {
+        // Use the latest valid version group details
         const detail = validDetails[0];
         moveMap.set(pokemonMove.move.name, {
           method: detail.move_learn_method.name,

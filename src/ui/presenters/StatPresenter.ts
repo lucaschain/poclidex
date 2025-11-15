@@ -1,6 +1,7 @@
 import { theme, colors } from '../theme.js';
 import type { PokemonDisplay } from '../../models/pokemon.js';
 import { pokemonRepository } from '../../repositories/PokemonRepository.js';
+import { generationService } from '../../services/generationService.js';
 
 /**
  * Presenter for rendering Pokemon stats
@@ -39,7 +40,7 @@ export class StatPresenter {
   }
 
   /**
-   * Render abilities section with descriptions
+   * Render abilities section with descriptions, filtered by generation
    */
   async renderAbilities(pokemon: PokemonDisplay): Promise<string[]> {
     const lines: string[] = [];
@@ -47,10 +48,19 @@ export class StatPresenter {
     lines.push('');
     lines.push(`{${colors.pokemonYellow}-fg}{bold}Abilities{/bold}{/}`);
 
+    // Get effective generation for filtering
+    const sessionGeneration = generationService.getSessionGeneration();
+    const effectiveGeneration = Math.max(sessionGeneration, pokemon.generation);
+
     // Fetch ability details for all abilities
     for (const ability of pokemon.abilities) {
       const details = await pokemonRepository.getAbilityDetails(ability.name);
       details.isHidden = ability.isHidden;
+
+      // Filter out abilities introduced after the effective generation
+      if (details.generation > effectiveGeneration) {
+        continue; // Skip this ability
+      }
 
       const hidden = details.isHidden ? ' {cyan-fg}(Hidden){/}' : '';
       lines.push(`• {bold}${details.displayName}${hidden}{/bold}`);

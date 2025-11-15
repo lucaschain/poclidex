@@ -2,6 +2,7 @@ import blessed from 'blessed';
 import { getTypeColor, colors } from '../theme.js';
 import { pokemonRepository } from '../../repositories/PokemonRepository.js';
 import { imageService } from '../../services/imageService.js';
+import { generationService } from '../../services/generationService.js';
 import type { PokemonDisplay } from '../../models/pokemon.js';
 import type { IDetailSection } from '../components/sections/IDetailSection.js';
 import { SpriteSection } from '../components/sections/SpriteSection.js';
@@ -284,16 +285,21 @@ export class DetailScreen {
   }
 
   /**
-   * Display header with Pokemon name and types
+   * Display header with Pokemon name, generation, and types
    */
   private displayHeader(pokemon: PokemonDisplay): void {
     const types = pokemon.types
       .map(t => `{${getTypeColor(t)}-fg}${t.toUpperCase()}{/}`)
       .join(' ');
 
+    // Calculate effective generation (max of session gen and Pokemon's release gen)
+    const sessionGeneration = generationService.getSessionGeneration();
+    const effectiveGeneration = Math.max(sessionGeneration, pokemon.generation);
+
     const name = `{${colors.pokemonYellow}-fg}{bold}${pokemon.displayName}{/bold}{/}`;
     const id = `{gray-fg}#${pokemon.id.toString().padStart(4, '0')}{/}`;
-    const content = `{center}${name} ${id} ${types}{/center}`;
+    const gen = `{cyan-fg}(gen ${effectiveGeneration}){/}`;
+    const content = `{center}${name} ${id} ${gen} ${types}{/center}`;
 
     const header = (this as any).header as blessed.Widgets.BoxElement;
     header.setContent(content);

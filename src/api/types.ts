@@ -10,6 +10,11 @@ export interface PokemonType {
   type: NamedAPIResource;
 }
 
+export interface PokemonPastType {
+  generation: NamedAPIResource;
+  types: PokemonType[];
+}
+
 export interface PokemonAbility {
   is_hidden: boolean;
   slot: number;
@@ -63,6 +68,7 @@ export interface Pokemon {
   weight: number;
   abilities: PokemonAbility[];
   types: PokemonType[];
+  past_types?: PokemonPastType[];
   stats: PokemonStat[];
   sprites: PokemonSprites;
   species: NamedAPIResource;
