@@ -109,7 +109,7 @@ const detailScreen = new DetailScreen({
 updateFooter('home');
 
 // Global hotkeys
-screen.key(['C-c', 'q'], () => {
+screen.key(['C-c'], () => {
   return process.exit(0);
 });
 

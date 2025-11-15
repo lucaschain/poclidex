@@ -3,22 +3,31 @@ import { theme } from '../theme.js';
 
 export interface SearchBoxOptions {
   parent: blessed.Widgets.Node;
+  screen: blessed.Widgets.Screen;
   top?: number | string;
   left?: number | string;
   width?: number | string;
   onSearch?: (query: string) => void;
-  onEscape?: () => void;
+  onNavigateDown?: () => void;
+  onNavigateUp?: () => void;
+  onSubmit?: () => void;
 }
 
 export class SearchBox {
   private container: blessed.Widgets.BoxElement;
   private input: blessed.Widgets.TextboxElement;
+  private screen: blessed.Widgets.Screen;
   private onSearchCallback?: (query: string) => void;
-  private onEscapeCallback?: () => void;
+  private onNavigateDownCallback?: () => void;
+  private onNavigateUpCallback?: () => void;
+  private onSubmitCallback?: () => void;
 
   constructor(options: SearchBoxOptions) {
+    this.screen = options.screen;
     this.onSearchCallback = options.onSearch;
-    this.onEscapeCallback = options.onEscape;
+    this.onNavigateDownCallback = options.onNavigateDown;
+    this.onNavigateUpCallback = options.onNavigateUp;
+    this.onSubmitCallback = options.onSubmit;
 
     // Container for search box
     this.container = blessed.box({
@@ -36,9 +45,9 @@ export class SearchBox {
       left: 0,
       width: '100%',
       height: 3,
-      keys: true,
+      keys: false,
       mouse: true,
-      inputOnFocus: true,
+      inputOnFocus: false,
       label: ' Filter Pokemon (Ctrl+S) ',
       content: '',
       style: {
@@ -60,28 +69,82 @@ export class SearchBox {
   }
 
   private setupEventHandlers(): void {
-    // Handle Escape key - return focus to list
-    this.input.key(['escape'], () => {
-      if (this.onEscapeCallback) {
-        this.onEscapeCallback();
-      }
-    });
-
-    // Handle Down arrow - return focus to list
-    this.input.key(['down'], () => {
-      if (this.onEscapeCallback) {
-        this.onEscapeCallback();
-      }
-    });
-
-    // Real-time filtering as user types
-    this.input.on('keypress', () => {
-      setImmediate(() => {
-        const query = this.input.getValue();
-        if (this.onSearchCallback) {
-          this.onSearchCallback(query);
+    // Manually handle all key input since keys: false and inputOnFocus: false
+    this.input.on('keypress', (ch, key) => {
+      // Navigation keys
+      if (key.name === 'tab' && !key.shift) {
+        if (this.onNavigateDownCallback) {
+          this.onNavigateDownCallback();
+          this.screen.render();
         }
-      });
+        return;
+      }
+
+      if (key.name === 'tab' && key.shift) {
+        if (this.onNavigateUpCallback) {
+          this.onNavigateUpCallback();
+          this.screen.render();
+        }
+        return;
+      }
+
+      if (key.name === 'down') {
+        if (this.onNavigateDownCallback) {
+          this.onNavigateDownCallback();
+          this.screen.render();
+        }
+        return;
+      }
+
+      if (key.name === 'up') {
+        if (this.onNavigateUpCallback) {
+          this.onNavigateUpCallback();
+          this.screen.render();
+        }
+        return;
+      }
+
+      if (key.name === 'enter') {
+        if (this.onSubmitCallback) {
+          this.onSubmitCallback();
+        }
+        return;
+      }
+
+      // Ctrl+W - clear search
+      if (key.name === 'w' && key.ctrl) {
+        this.input.setValue('');
+        this.screen.render();
+        this.triggerSearch();
+        return;
+      }
+
+      // Backspace - delete last character
+      if (key.name === 'backspace') {
+        const current = this.input.getValue();
+        this.input.setValue(current.slice(0, -1));
+        this.screen.render();
+        this.triggerSearch();
+        return;
+      }
+
+      // Regular character input
+      if (ch && !key.ctrl && !key.meta) {
+        const current = this.input.getValue();
+        this.input.setValue(current + ch);
+        this.screen.render();
+        this.triggerSearch();
+        return;
+      }
+    });
+  }
+
+  private triggerSearch(): void {
+    setImmediate(() => {
+      const query = this.input.getValue();
+      if (this.onSearchCallback) {
+        this.onSearchCallback(query);
+      }
     });
   }
 
@@ -99,5 +162,14 @@ export class SearchBox {
 
   clearValue(): void {
     this.input.clearValue();
+  }
+
+  /**
+   * Clear the search input and trigger search (shows all Pokemon)
+   */
+  clear(): void {
+    this.input.setValue('');
+    this.screen.render();
+    this.triggerSearch();
   }
 }

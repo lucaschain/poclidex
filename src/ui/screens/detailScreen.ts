@@ -35,6 +35,7 @@ export class DetailScreen {
   private onBackCallback?: () => void;
   private onEvolutionSelectCallback?: (pokemonName: string) => Promise<void>;
   private currentPokemon?: PokemonDisplay;
+  private loadingBox?: blessed.Widgets.BoxElement;
 
   constructor(options: DetailScreenOptions) {
     this.screen = options.screen;
@@ -164,6 +165,8 @@ export class DetailScreen {
    * Display Pokemon details
    */
   async showPokemon(name: string): Promise<void> {
+    this.showLoading(name);
+
     try {
       // Load Pokemon data
       const pokemon = await pokemonRepository.getPokemonDetails(name);
@@ -178,6 +181,8 @@ export class DetailScreen {
       this.show();
     } catch (error) {
       this.displayError(error as Error);
+    } finally {
+      this.hideLoading();
     }
   }
 
@@ -295,6 +300,44 @@ export class DetailScreen {
     const errorContent = `{red-fg}Error loading Pokemon: ${error.message}{/}`;
     this.sections[0].getWidget().setContent(errorContent);
     this.show();
+  }
+
+  /**
+   * Show loading indicator
+   */
+  private showLoading(pokemonName: string): void {
+    // Create centered loading box overlay
+    this.loadingBox = blessed.box({
+      parent: this.screen,
+      top: 'center',
+      left: 'center',
+      width: 50,
+      height: 5,
+      tags: true,
+      border: {
+        type: 'line',
+      },
+      style: {
+        border: {
+          fg: 'yellow',
+        },
+      },
+    });
+
+    const displayName = pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1);
+    this.loadingBox.setContent(`{center}{bold}Loading ${displayName}...{/bold}{/center}`);
+    this.screen.render();
+  }
+
+  /**
+   * Hide loading indicator
+   */
+  private hideLoading(): void {
+    if (this.loadingBox) {
+      this.loadingBox.destroy();
+      this.loadingBox = undefined;
+      this.screen.render();
+    }
   }
 
   /**

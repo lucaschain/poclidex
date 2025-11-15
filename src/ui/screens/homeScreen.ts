@@ -35,10 +35,13 @@ export class HomeScreen {
     // Create search box
     this.searchBox = new SearchBox({
       parent: this.container,
+      screen: this.screen,
       top: 0,
       width: '100%',
       onSearch: (query) => this.handleSearch(query),
-      onEscape: () => this.pokemonList.focus(),
+      onNavigateDown: () => this.pokemonList.moveSelectionDown(),
+      onNavigateUp: () => this.pokemonList.moveSelectionUp(),
+      onSubmit: () => this.pokemonList.selectCurrent(),
     });
 
     // Create Pokemon list
@@ -85,10 +88,10 @@ export class HomeScreen {
       this.pokemonList.setData(pokemonList);
 
       // Update status
-      this.updateStatus(`Loaded ${pokemonList.length} Pokemon. Press Ctrl+S to search.`);
+      this.updateStatus(`Loaded ${pokemonList.length} Pokemon. Start typing to search.`);
 
-      // Focus the list by default
-      this.pokemonList.focus();
+      // Focus the search box by default (always focused)
+      this.searchBox.focus();
       this.screen.render();
     } catch (error) {
       this.updateStatus(`Error loading Pokemon: ${error}`);
@@ -185,6 +188,7 @@ export class HomeScreen {
   }
 
   focusSearch(): void {
+    this.searchBox.clear();
     this.searchBox.focus();
     this.screen.render();
   }

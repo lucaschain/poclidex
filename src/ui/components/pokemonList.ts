@@ -29,7 +29,6 @@ export class PokemonList {
       height: options.height ?? '100%',
       keys: true,
       mouse: true,
-      vi: true,
       tags: true,
       scrollbar: {
         ch: ' ',
@@ -169,6 +168,32 @@ export class PokemonList {
    */
   hide(): void {
     this.list.hide();
+  }
+
+  /**
+   * Move selection down by one
+   */
+  moveSelectionDown(): void {
+    this.list.down(1);
+    this.list.screen.render();
+  }
+
+  /**
+   * Move selection up by one
+   */
+  moveSelectionUp(): void {
+    this.list.up(1);
+    this.list.screen.render();
+  }
+
+  /**
+   * Select the currently highlighted Pokemon
+   */
+  selectCurrent(): void {
+    const index = (this.list as any).selected;
+    if (this.onSelectCallback && this.filteredData[index]) {
+      this.onSelectCallback(this.filteredData[index]);
+    }
   }
 
   /**
