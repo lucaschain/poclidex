@@ -22,6 +22,7 @@ export class OverviewSection extends BaseDetailSection {
       alwaysScroll: true,
       label: ' Overview ',
       style: {
+        bg: theme.detailBox.bg,
         border: theme.detailBox.border,
       },
       border: {

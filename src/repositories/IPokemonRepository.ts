@@ -26,6 +26,7 @@ export interface MoveData {
   learnMethod: 'level-up' | 'machine' | 'egg' | 'tutor';
   levelLearned?: number;
   generation?: number;
+  description?: string;
 }
 
 /**

@@ -7,6 +7,10 @@ export const colors = {
   screenBlue: '#3B4CCA',
   lightScreenBlue: '#B0D4FF', // Blueish background for sprite display
 
+  // Background colors
+  defaultBg: '#1a1a2e', // Dark blue-grey background
+  darkBg: '#0f0f1e', // Even darker background for contrast
+
   // Type colors
   normal: '#A8A878',
   fire: '#F08030',
@@ -63,6 +67,7 @@ export const theme = {
   },
   list: {
     fg: 'white',
+    bg: colors.darkBg,
     selected: {
       fg: 'black',
       bg: colors.pokemonYellow,
@@ -72,6 +77,7 @@ export const theme = {
     },
   },
   detailBox: {
+    bg: colors.darkBg,
     border: {
       fg: colors.pokedexBlue,
     },

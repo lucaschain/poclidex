@@ -22,6 +22,7 @@ export class StatsSection extends BaseDetailSection {
       alwaysScroll: true,
       label: ' Stats & Abilities ',
       style: {
+        bg: theme.detailBox.bg,
         border: theme.detailBox.border,
       },
       border: {

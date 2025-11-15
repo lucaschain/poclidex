@@ -33,9 +33,11 @@ const GENERATION_RANGES = [
  */
 export class PokemonRepository implements IPokemonRepository {
   private abilityCache: LRUCache<string, AbilityDetail>;
+  private moveCache: LRUCache<string, import('../api/types.js').Move>;
 
   constructor() {
     this.abilityCache = new LRUCache(100); // Cache up to 100 abilities
+    this.moveCache = new LRUCache(200); // Cache up to 200 moves
   }
 
   /**
@@ -88,12 +90,95 @@ export class PokemonRepository implements IPokemonRepository {
   }
 
   /**
-   * Get moves for a Pokemon (stub for now - will implement in Phase 3)
+   * Get moves for a Pokemon
    */
-  async getMoves(_pokemonId: number, _generation?: number): Promise<MoveData[]> {
-    // Placeholder: Will implement full move fetching in Phase 3
-    // For now, return empty array to maintain interface compatibility
-    return [];
+  async getMoves(pokemonId: number, _generation?: number): Promise<MoveData[]> {
+    // Fetch Pokemon data
+    const pokemon = await pokeAPI.getPokemon(pokemonId);
+
+    // Filter to main learn methods
+    const mainMethods = ['level-up', 'machine', 'egg', 'tutor'];
+
+    // Get latest version group details for each move
+    const moveMap = new Map<string, { method: string; level: number }>();
+
+    for (const pokemonMove of pokemon.moves) {
+      // Get the latest version group detail with a main learn method
+      const validDetails = pokemonMove.version_group_details
+        .filter(d => mainMethods.includes(d.move_learn_method.name))
+        .sort((_a, _b) => {
+          // Sort by version group (latest first), then by level
+          // For simplicity, just use the first valid one
+          return 0;
+        });
+
+      if (validDetails.length > 0) {
+        const detail = validDetails[0];
+        moveMap.set(pokemonMove.move.name, {
+          method: detail.move_learn_method.name,
+          level: detail.level_learned_at
+        });
+      }
+    }
+
+    // Fetch move details for all moves in parallel
+    const moveNames = Array.from(moveMap.keys());
+    const moveDetails = await Promise.all(
+      moveNames.map(async (moveName) => {
+        // Check cache first
+        const cached = this.moveCache.get(moveName);
+        if (cached) {
+          return cached;
+        }
+
+        // Fetch from API
+        const move = await pokeAPI.getMove(moveName);
+        this.moveCache.set(moveName, move);
+        return move;
+      })
+    );
+
+    // Transform to MoveData format
+    const moves: MoveData[] = moveDetails.map((move, index) => {
+      const moveName = moveNames[index];
+      const learnInfo = moveMap.get(moveName)!;
+
+      // Get English short effect
+      const shortEffect = move.effect_entries.find(e => e.language.name === 'en')?.short_effect || 'No description available.';
+
+      return {
+        name: move.name,
+        type: move.type.name,
+        category: move.damage_class.name as 'physical' | 'special' | 'status',
+        power: move.power,
+        accuracy: move.accuracy,
+        pp: move.pp,
+        learnMethod: learnInfo.method as 'level-up' | 'machine' | 'egg' | 'tutor',
+        levelLearned: learnInfo.level > 0 ? learnInfo.level : undefined,
+        description: shortEffect,
+      };
+    });
+
+    // Sort moves: level-up by level, then alphabetically by name
+    moves.sort((a, b) => {
+      // Level-up moves first, sorted by level
+      if (a.learnMethod === 'level-up' && b.learnMethod === 'level-up') {
+        return (a.levelLearned || 0) - (b.levelLearned || 0);
+      }
+      if (a.learnMethod === 'level-up') return -1;
+      if (b.learnMethod === 'level-up') return 1;
+
+      // Then by learn method
+      const methodOrder = { 'machine': 0, 'egg': 1, 'tutor': 2 };
+      const aOrder = methodOrder[a.learnMethod as keyof typeof methodOrder] ?? 99;
+      const bOrder = methodOrder[b.learnMethod as keyof typeof methodOrder] ?? 99;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+
+      // Finally alphabetically by name
+      return a.name.localeCompare(b.name);
+    });
+
+    return moves;
   }
 
   /**

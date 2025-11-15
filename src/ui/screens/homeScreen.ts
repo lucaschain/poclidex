@@ -1,4 +1,5 @@
 import blessed from 'blessed';
+import { colors } from '../theme.js';
 import { SearchBox } from '../components/searchBox.js';
 import { PokemonList } from '../components/pokemonList.js';
 import { searchService } from '../../services/searchService.js';
@@ -30,6 +31,9 @@ export class HomeScreen {
       left: 0,
       width: '100%',
       height: '100%',
+      style: {
+        bg: 'transparent',
+      },
     });
 
     // Create search box
@@ -64,7 +68,7 @@ export class HomeScreen {
       content: 'Loading Pokemon data...',
       style: {
         fg: 'white',
-        bg: 'blue',
+        bg: colors.navyBlue,
       },
     });
 

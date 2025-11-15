@@ -51,6 +51,9 @@ export class DetailScreen {
       height: '100%',
       hidden: true,
       tags: true,
+      style: {
+        bg: 'transparent',
+      },
     });
 
     // Initialize all sections
@@ -92,6 +95,9 @@ export class DetailScreen {
       left: 0,
       width: '50%',
       height: '100%-3',
+      style: {
+        bg: 'transparent',
+      },
     });
 
     // Right column container (50% width, below header)
@@ -101,6 +107,9 @@ export class DetailScreen {
       left: '50%',
       width: '50%',
       height: '100%-3',
+      style: {
+        bg: 'transparent',
+      },
     });
 
     // Left column header (aligns with tab bar)

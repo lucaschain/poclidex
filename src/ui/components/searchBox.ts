@@ -71,6 +71,11 @@ export class SearchBox {
   private setupEventHandlers(): void {
     // Manually handle all key input since keys: false and inputOnFocus: false
     this.input.on('keypress', (ch, key) => {
+      // Only process keypresses if the input is visible and focused
+      if (this.input.hidden || this.input.screen.focused !== this.input) {
+        return;
+      }
+
       // Navigation keys
       if (key.name === 'tab' && !key.shift) {
         if (this.onNavigateDownCallback) {

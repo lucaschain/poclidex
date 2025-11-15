@@ -46,6 +46,15 @@ export interface PokemonSprites {
   };
 }
 
+export interface PokemonMove {
+  move: NamedAPIResource;
+  version_group_details: Array<{
+    level_learned_at: number;
+    move_learn_method: NamedAPIResource;
+    version_group: NamedAPIResource;
+  }>;
+}
+
 export interface Pokemon {
   id: number;
   name: string;
@@ -57,6 +66,7 @@ export interface Pokemon {
   stats: PokemonStat[];
   sprites: PokemonSprites;
   species: NamedAPIResource;
+  moves: PokemonMove[];
 }
 
 export interface PokemonSpecies {
@@ -166,4 +176,21 @@ export interface Ability {
     language: NamedAPIResource;
     version_group: NamedAPIResource;
   }>;
+}
+
+export interface Move {
+  id: number;
+  name: string;
+  accuracy: number | null;
+  power: number | null;
+  pp: number;
+  priority: number;
+  type: NamedAPIResource;
+  damage_class: NamedAPIResource;
+  effect_entries: Array<{
+    effect: string;
+    short_effect: string;
+    language: NamedAPIResource;
+  }>;
+  generation: NamedAPIResource;
 }

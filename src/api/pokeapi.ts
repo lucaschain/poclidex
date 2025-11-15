@@ -5,6 +5,7 @@ import type {
   EvolutionChain,
   PokemonListResponse,
   Ability,
+  Move,
 } from './types.js';
 
 // Initialize the Pokedex API client
@@ -80,6 +81,14 @@ export class PokeAPI {
   async getAbility(nameOrId: string | number): Promise<Ability> {
     const ability = await P.getAbilityByName(nameOrId);
     return ability as unknown as Ability;
+  }
+
+  /**
+   * Get move details by name or ID
+   */
+  async getMove(nameOrId: string | number): Promise<Move> {
+    const move = await P.getMoveByName(nameOrId);
+    return move as unknown as Move;
   }
 }
 

@@ -48,6 +48,11 @@ export interface IDetailSection {
    * Hide the section
    */
   hide(): void;
+
+  /**
+   * Focus the section (optional, for interactive sections)
+   */
+  focus?(): void;
 }
 
 /**

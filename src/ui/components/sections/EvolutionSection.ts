@@ -24,6 +24,7 @@ export class EvolutionSection extends BaseDetailSection {
       alwaysScroll: true,
       label: ' Evolution Chain (E to navigate) ',
       style: {
+        bg: theme.detailBox.bg,
         border: theme.detailBox.border,
       },
       border: {

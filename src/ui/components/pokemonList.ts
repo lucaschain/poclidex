@@ -38,6 +38,7 @@ export class PokemonList {
       },
       style: {
         fg: theme.list.fg,
+        bg: theme.list.bg,
         border: theme.list.border,
         selected: theme.list.selected,
       },

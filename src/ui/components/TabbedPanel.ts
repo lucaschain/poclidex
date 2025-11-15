@@ -64,6 +64,9 @@ export class TabbedPanel {
       left: 0,
       width: '100%',
       height: '100%-1',
+      style: {
+        bg: 'transparent',
+      },
     });
 
     this.setupHotkeys();
@@ -109,7 +112,13 @@ export class TabbedPanel {
 
     // Show new tab
     this.activeTabIndex = index;
-    this.tabs[this.activeTabIndex].section.show();
+    const activeSection = this.tabs[this.activeTabIndex].section;
+    activeSection.show();
+
+    // Focus the section if it supports focus
+    if (activeSection.focus) {
+      activeSection.focus();
+    }
 
     this.renderTabBar();
     this.screen.render();
