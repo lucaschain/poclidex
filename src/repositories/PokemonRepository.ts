@@ -1,4 +1,5 @@
 import { pokemonService } from '../services/pokemonService.js';
+import { pokeAPI } from '../api/pokeapi.js';
 import type { PokemonListItem, EvolutionChain } from '../api/types.js';
 import type { PokemonDisplay } from '../models/pokemon.js';
 import type {
@@ -7,6 +8,7 @@ import type {
   MoveData,
   AbilityDetail,
 } from './IPokemonRepository.js';
+import { LRUCache } from '../utils/cache.js';
 
 /**
  * Generation ranges (based on National Dex numbers)
@@ -30,6 +32,12 @@ const GENERATION_RANGES = [
  * This allows us to decouple UI components from service implementation details.
  */
 export class PokemonRepository implements IPokemonRepository {
+  private abilityCache: LRUCache<string, AbilityDetail>;
+
+  constructor() {
+    this.abilityCache = new LRUCache(100); // Cache up to 100 abilities
+  }
+
   /**
    * Get a list of Pokemon with optional filtering
    */
@@ -89,19 +97,72 @@ export class PokemonRepository implements IPokemonRepository {
   }
 
   /**
-   * Get ability details (stub for now - will implement in Phase 4)
+   * Get ability details with caching
    */
   async getAbilityDetails(abilityName: string): Promise<AbilityDetail> {
-    // Placeholder: Will implement in Phase 4
-    // For now, return basic structure
-    return {
-      name: abilityName,
-      displayName: abilityName.charAt(0).toUpperCase() + abilityName.slice(1),
-      description: 'Ability details not yet loaded.',
-      effect: '',
-      generation: 1,
-      isHidden: false,
-    };
+    // Check cache first
+    const cached = this.abilityCache.get(abilityName);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      // Fetch from API
+      const ability = await pokeAPI.getAbility(abilityName);
+
+      // Find English effect entry
+      const englishEffect = ability.effect_entries.find(
+        entry => entry.language.name === 'en'
+      );
+
+      // Find English flavor text (most recent version)
+      const englishFlavor = ability.flavor_text_entries
+        .filter(entry => entry.language.name === 'en')
+        .pop(); // Get the last (most recent) entry
+
+      // Find English name
+      const englishName = ability.names.find(
+        name => name.language.name === 'en'
+      );
+
+      // Extract generation number from URL
+      const genMatch = ability.generation.url.match(/\/generation\/(\d+)\//);
+      const generation = genMatch ? parseInt(genMatch[1], 10) : 1;
+
+      const abilityDetail: AbilityDetail = {
+        name: ability.name,
+        displayName: englishName?.name || this.formatAbilityName(ability.name),
+        description: englishFlavor?.flavor_text.replace(/\n/g, ' ') || '',
+        effect: englishEffect?.short_effect || englishEffect?.effect || '',
+        generation,
+        isHidden: false, // This will be set by the caller based on Pokemon data
+      };
+
+      // Cache the result
+      this.abilityCache.set(abilityName, abilityDetail);
+
+      return abilityDetail;
+    } catch (error) {
+      // Return fallback on error
+      return {
+        name: abilityName,
+        displayName: this.formatAbilityName(abilityName),
+        description: 'Unable to load ability details.',
+        effect: '',
+        generation: 1,
+        isHidden: false,
+      };
+    }
+  }
+
+  /**
+   * Format ability name from kebab-case to Title Case
+   */
+  private formatAbilityName(name: string): string {
+    return name
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   /**

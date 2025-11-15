@@ -36,16 +36,16 @@ export class HomeScreen {
       parent: this.container,
       top: 0,
       width: '100%',
-      onSelect: (name) => this.handlePokemonSelect(name),
       onSearch: (query) => this.handleSearch(query),
+      onEscape: () => this.pokemonList.focus(),
     });
 
     // Create Pokemon list
     this.pokemonList = new PokemonList({
       parent: this.container,
-      top: 5, // Below search box (3) + some spacing
+      top: 3, // Right below search box (no extra spacing)
       width: '100%',
-      height: '100%-6', // Full height minus search box and status bar
+      height: '100%-4', // Full height minus search box and status bar
       onSelect: (pokemon) => this.handlePokemonSelect(pokemon.name),
     });
 

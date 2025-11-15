@@ -4,6 +4,13 @@ import blessed from 'blessed';
 import { theme, colors } from './ui/theme.js';
 import { HomeScreen } from './ui/screens/homeScreen.js';
 import { DetailScreen } from './ui/screens/detailScreen.js';
+import { logTerminalInfo } from './utils/terminalDetection.js';
+
+// Check for debug colors flag
+if (process.argv.includes('--debug-colors')) {
+  logTerminalInfo();
+  process.exit(0);
+}
 
 // Create the blessed screen
 const screen = blessed.screen({
@@ -69,7 +76,7 @@ function updateFooter(mode: 'home' | 'detail') {
     );
   } else {
     footer.setContent(
-      '{center}E: Navigate Evolution | Esc/B: Back | Q/Ctrl+C: Quit{/center}'
+      '{center}Tab/←→: Switch Tabs | 1-4: Direct Tab | E: Evolution | Ctrl+S: Search | Esc/B: Back | Q: Quit{/center}'
     );
   }
   screen.render();

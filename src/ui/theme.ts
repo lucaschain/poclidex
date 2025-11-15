@@ -5,6 +5,7 @@ export const colors = {
   pokedexBlue: '#3D7DCA',
   navyBlue: '#003A70',
   screenBlue: '#3B4CCA',
+  lightScreenBlue: '#B0D4FF', // Blueish background for sprite display
 
   // Type colors
   normal: '#A8A878',

@@ -1,5 +1,6 @@
 import { theme, colors } from '../theme.js';
 import type { PokemonDisplay } from '../../models/pokemon.js';
+import { pokemonRepository } from '../../repositories/PokemonRepository.js';
 
 /**
  * Presenter for rendering Pokemon stats
@@ -38,18 +39,55 @@ export class StatPresenter {
   }
 
   /**
-   * Render abilities section
+   * Render abilities section with descriptions
    */
-  renderAbilities(pokemon: PokemonDisplay): string[] {
+  async renderAbilities(pokemon: PokemonDisplay): Promise<string[]> {
     const lines: string[] = [];
 
     lines.push('');
     lines.push(`{${colors.pokemonYellow}-fg}{bold}Abilities{/bold}{/}`);
-    pokemon.abilities.forEach(ability => {
-      const hidden = ability.isHidden ? ' {cyan-fg}(Hidden){/}' : '';
-      lines.push(`• ${ability.name}${hidden}`);
-    });
 
+    // Fetch ability details for all abilities
+    for (const ability of pokemon.abilities) {
+      const details = await pokemonRepository.getAbilityDetails(ability.name);
+      details.isHidden = ability.isHidden;
+
+      const hidden = details.isHidden ? ' {cyan-fg}(Hidden){/}' : '';
+      lines.push(`• {bold}${details.displayName}${hidden}{/bold}`);
+
+      // Add description or effect (prefer description, fallback to effect)
+      const text = details.description || details.effect;
+      if (text) {
+        // Wrap text to fit within the section (approximately 40 chars per line)
+        const wrapped = this.wrapText(text, 38);
+        wrapped.forEach(line => {
+          lines.push(`  {gray-fg}${line}{/}`);
+        });
+      }
+      lines.push(''); // Spacing between abilities
+    }
+
+    return lines;
+  }
+
+  /**
+   * Wrap text to a specified width
+   */
+  private wrapText(text: string, width: number): string[] {
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+
+    for (const word of words) {
+      if (currentLine.length + word.length + 1 <= width) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    }
+
+    if (currentLine) lines.push(currentLine);
     return lines;
   }
 

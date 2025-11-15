@@ -133,6 +133,7 @@ pokedex/
 - `npm start` - Run the compiled application
 - `npm run dev` - Build and run in one command
 - `npm run watch` - Watch mode for development
+- `npm run debug-colors` - Test and debug terminal color support
 
 ### Architecture
 
@@ -161,18 +162,72 @@ Type-specific colors are used for Pokemon types (Fire: red/orange, Water: blue, 
 
 ## Troubleshooting
 
-**Sprites not displaying:**
+### Color Support Issues
+
+**Sprites look washed out or limited to 256 colors:**
+
+The app automatically detects your terminal's color capabilities. For the best experience with vibrant, full-color sprites, your terminal should support **truecolor** (16 million colors).
+
+**Check your terminal's color support:**
+```bash
+npm run debug-colors
+```
+
+Or run the standalone test:
+```bash
+./scripts/test-colors.sh
+```
+
+**Fix truecolor support:**
+
+1. **Using tmux?** Add to `~/.tmux.conf`:
+   ```bash
+   set -g default-terminal "screen-256color"
+   set -ga terminal-overrides ",*256col*:Tc"
+   ```
+   Then reload: `tmux source-file ~/.tmux.conf`
+
+2. **Terminal emulator recommendations** (with truecolor support):
+   - **macOS**: iTerm2, Kitty, Alacritty, WezTerm
+   - **Linux**: Kitty, Alacritty, GNOME Terminal 3.x+, Konsole
+   - **Windows**: Windows Terminal, WezTerm
+
+3. **Set environment variable:**
+   ```bash
+   export COLORTERM=truecolor
+   ```
+
+4. **Force color mode:**
+   ```bash
+   # Force truecolor
+   export POKEDEX_COLORS=full
+   npm start
+
+   # Or force 256 colors
+   export POKEDEX_COLORS=256
+   npm start
+   ```
+
+**Debug Chafa commands:**
+```bash
+DEBUG_COLORS=1 npm start
+```
+
+### Sprites not displaying
+
 - Ensure Chafa is installed: `chafa --version`
 - Check that sprites are downloading (requires internet connection)
 
-**Application crashes on search:**
+### Application crashes on search
+
 - Wait for Pokemon data to finish loading
 - Ensure you have a stable internet connection for API calls
 
-**Display issues:**
-- Ensure your terminal supports 256 colors
-- Try resizing your terminal window
-- Use a modern terminal emulator (iTerm2, Windows Terminal, etc.)
+### Display issues
+
+- Try resizing your terminal window (minimum 80x24 recommended)
+- Use a modern terminal emulator with Unicode support
+- If using SSH, ensure `COLORTERM` is forwarded or set on the remote machine
 
 ## Contributing
 

@@ -4,6 +4,7 @@ import type {
   PokemonSpecies,
   EvolutionChain,
   PokemonListResponse,
+  Ability,
 } from './types.js';
 
 // Initialize the Pokedex API client
@@ -71,6 +72,14 @@ export class PokeAPI {
       return parseInt(speciesMatches[1], 10);
     }
     return parseInt(matches[1], 10);
+  }
+
+  /**
+   * Get ability details by name or ID
+   */
+  async getAbility(nameOrId: string | number): Promise<Ability> {
+    const ability = await P.getAbilityByName(nameOrId);
+    return ability as unknown as Ability;
   }
 }
 

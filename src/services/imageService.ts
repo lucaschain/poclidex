@@ -5,6 +5,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import https from 'https';
 import { LRUCache } from '../utils/cache.js';
+import { getChafaColorMode, detectTerminalCapabilities } from '../utils/terminalDetection.js';
 
 /**
  * Service for converting images to ASCII art using Chafa
@@ -12,10 +13,21 @@ import { LRUCache } from '../utils/cache.js';
 export class ImageService {
   private cache: LRUCache<string, string>;
   private tempDir: string;
+  private colorMode: 'full' | '256' | '16' | '8';
+  private debugMode: boolean;
 
   constructor() {
     this.cache = new LRUCache(50); // Cache up to 50 ASCII images
     this.tempDir = join(tmpdir(), 'pokedex-sprites');
+    this.debugMode = process.env.DEBUG_COLORS === '1' || process.env.DEBUG_COLORS === 'true';
+    this.colorMode = getChafaColorMode();
+
+    if (this.debugMode) {
+      const caps = detectTerminalCapabilities();
+      console.error(`[ImageService] Detected color mode: ${this.colorMode}`);
+      console.error(`[ImageService] Terminal: ${caps.term}, COLORTERM: ${caps.colorterm}`);
+    }
+
     this.ensureTempDir();
   }
 
@@ -28,9 +40,9 @@ export class ImageService {
   /**
    * Convert image URL to ASCII art using Chafa
    */
-  async urlToAscii(url: string, width: number = 40, height: number = 20): Promise<string> {
+  async urlToAscii(url: string, width: number = 40, height: number = 20, bgColor?: string): Promise<string> {
     // Check cache first
-    const cacheKey = `${url}-${width}-${height}`;
+    const cacheKey = `${url}-${width}-${height}-${bgColor || 'none'}`;
     const cached = this.cache.get(cacheKey);
     if (cached) {
       return cached;
@@ -41,7 +53,7 @@ export class ImageService {
       const tempFile = await this.downloadImage(url);
 
       // Convert to ASCII
-      const ascii = await this.chafa(tempFile, width, height);
+      const ascii = await this.chafa(tempFile, width, height, bgColor);
 
       // Cache the result
       this.cache.set(cacheKey, ascii);
@@ -87,18 +99,30 @@ export class ImageService {
   /**
    * Run Chafa to convert image to ASCII
    */
-  private chafa(filepath: string, width: number, height: number): Promise<string> {
+  private chafa(filepath: string, width: number, height: number, bgColor?: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const chafaProcess = spawn('chafa', [
+      const args = [
         '--format=symbols',
-        '--colors=full',           // Use truecolor (16 million colors)
-        '--color-space=rgb',       // RGB color space for better colors
-        '--dither=bayer',          // Bayer dithering for smoother gradients
-        '--symbols=block',         // Use simple block characters for font compatibility
-        '--polite=on',             // Suppress cursor control codes
+        `--colors=${this.colorMode}`, // Adaptive color mode based on terminal
+        '--color-space=rgb',          // RGB color space for better colors
+        '--dither=bayer',             // Bayer dithering for smoother gradients
+        '--symbols=block',            // Use simple block characters for font compatibility
+        '--polite=on',                // Suppress cursor control codes
         `--size=${width}x${height}`,
-        filepath,
-      ]);
+      ];
+
+      // Add background color if specified
+      if (bgColor) {
+        args.push(`--bg=${bgColor}`);
+      }
+
+      args.push(filepath);
+
+      if (this.debugMode) {
+        console.error(`[ImageService] Chafa command: chafa ${args.join(' ')}`);
+      }
+
+      const chafaProcess = spawn('chafa', args);
 
       const chunks: Buffer[] = [];
       const errors: Buffer[] = [];
