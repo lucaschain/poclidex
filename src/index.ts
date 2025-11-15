@@ -4,6 +4,7 @@ import blessed from 'blessed';
 import { theme, colors } from './ui/theme.js';
 import { HomeScreen } from './ui/screens/homeScreen.js';
 import { DetailScreen } from './ui/screens/detailScreen.js';
+import { imageService } from './services/imageService.js';
 import { logTerminalInfo } from './utils/terminalDetection.js';
 
 // Check for debug colors flag
@@ -87,8 +88,17 @@ function updateFooter(mode: 'home' | 'detail') {
       '{center}Ctrl+S: Search | Arrow Keys: Navigate | Enter: Select | Q/Ctrl+C: Quit{/center}'
     );
   } else {
+    // Get all current rendering settings
+    const colorSpace = imageService.getCurrentColorSpace().toUpperCase();
+    const colorMode = imageService.getColorMode();
+    const ditherMode = imageService.getCurrentDitherMode();
+    const symbolSet = imageService.getCurrentSymbolSet();
+
     footer.setContent(
-      '{center}Tab/←→: Switch Tabs | 1-4: Direct Tab | E: Evolution | Ctrl+S: Search | Esc/B: Back | Q: Quit{/center}'
+      `{center}Tab/←→: Tabs | 1-4: Direct | ` +
+      `C: Space(${colorSpace}) | P: Colors(${colorMode}) | ` +
+      `D: Dither(${ditherMode}) | S: Symbols(${symbolSet}) | ` +
+      `E: Evo | Ctrl+S: Search | Esc/B: Back | Q: Quit{/center}`
     );
   }
   screen.render();
@@ -114,6 +124,9 @@ const detailScreen = new DetailScreen({
   },
   onEvolutionSelect: async (name) => {
     await detailScreen.showPokemon(name);
+  },
+  onFooterUpdate: () => {
+    updateFooter('detail');
   },
 });
 

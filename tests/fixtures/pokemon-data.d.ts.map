@@ -1,0 +1,1 @@
+{"version":3,"file":"pokemon-data.d.ts","sourceRoot":"","sources":["pokemon-data.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,OAAO,EAAE,cAAc,EAAE,cAAc,EAAE,eAAe,EAAE,MAAM,wBAAwB,CAAC;AAEvG;;GAEG;AAEH,eAAO,MAAM,kBAAkB,EAAE,OAyEhC,CAAC;AAEF,eAAO,MAAM,kBAAkB,EAAE,cAkChC,CAAC;AAEF,eAAO,MAAM,kBAAkB,EAAE,cA+EhC,CAAC;AAEF,eAAO,MAAM,eAAe,EAAE,eAAe,EAc5C,CAAC"}

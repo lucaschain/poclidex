@@ -8,12 +8,49 @@ import { LRUCache } from '../utils/cache.js';
 import { getChafaColorMode, detectTerminalCapabilities } from '../utils/terminalDetection.js';
 
 /**
+ * Available Chafa color spaces
+ * - rgb: Faster, less perceptually accurate (default)
+ * - din99d: Slower, more perceptually accurate color matching
+ */
+const AVAILABLE_COLOR_SPACES = ['rgb', 'din99d'] as const;
+type ColorSpace = typeof AVAILABLE_COLOR_SPACES[number];
+
+/**
+ * Available color modes (palette sizes)
+ */
+const AVAILABLE_COLOR_MODES = ['full', '256', '16', '8'] as const;
+type ColorMode = typeof AVAILABLE_COLOR_MODES[number];
+
+/**
+ * Available dither modes
+ * - ordered: Bayer pattern dithering (default)
+ * - diffusion: Floyd-Steinberg error diffusion (smoother gradients)
+ * - none: No dithering
+ */
+const AVAILABLE_DITHER_MODES = ['ordered', 'diffusion', 'none'] as const;
+type DitherMode = typeof AVAILABLE_DITHER_MODES[number];
+
+/**
+ * Available symbol sets
+ * - block: Unicode block elements (default)
+ * - braille: High resolution braille patterns
+ * - ascii: Old-school ASCII art
+ * - half: Half blocks
+ * - quad: Quarter blocks (more detailed)
+ */
+const AVAILABLE_SYMBOL_SETS = ['block', 'braille', 'ascii', 'half', 'quad'] as const;
+type SymbolSet = typeof AVAILABLE_SYMBOL_SETS[number];
+
+/**
  * Service for converting images to ASCII art using Chafa
  */
 export class ImageService {
   private cache: LRUCache<string, string>;
   private tempDir: string;
-  private colorMode: 'full' | '256' | '16' | '8';
+  private colorMode: ColorMode;
+  private currentColorSpace: ColorSpace;
+  private currentDitherMode: DitherMode;
+  private currentSymbolSet: SymbolSet;
   private debugMode: boolean;
 
   constructor() {
@@ -21,6 +58,9 @@ export class ImageService {
     this.tempDir = join(tmpdir(), 'pokedex-sprites');
     this.debugMode = process.env.DEBUG_COLORS === '1' || process.env.DEBUG_COLORS === 'true';
     this.colorMode = getChafaColorMode();
+    this.currentColorSpace = 'rgb'; // Default to RGB
+    this.currentDitherMode = 'ordered'; // Default to Bayer dithering
+    this.currentSymbolSet = 'block'; // Default to block symbols
 
     if (this.debugMode) {
       const caps = detectTerminalCapabilities();
@@ -41,8 +81,8 @@ export class ImageService {
    * Convert image URL to ASCII art using Chafa
    */
   async urlToAscii(url: string, width: number = 40, height: number = 20, bgColor?: string): Promise<string> {
-    // Check cache first
-    const cacheKey = `${url}-${width}-${height}-${bgColor || 'none'}`;
+    // Check cache first (include all rendering parameters in cache key)
+    const cacheKey = `${url}-${width}-${height}-${bgColor || 'none'}-${this.currentColorSpace}-${this.colorMode}-${this.currentDitherMode}-${this.currentSymbolSet}`;
     const cached = this.cache.get(cacheKey);
     if (cached) {
       return cached;
@@ -103,11 +143,11 @@ export class ImageService {
     return new Promise((resolve, reject) => {
       const args = [
         '--format=symbols',
-        `--colors=${this.colorMode}`, // Adaptive color mode based on terminal
-        '--color-space=rgb',          // RGB color space for better colors
-        '--dither=bayer',             // Bayer dithering for smoother gradients
-        '--symbols=block',            // Use simple block characters for font compatibility
-        '--polite=on',                // Suppress cursor control codes
+        `--colors=${this.colorMode}`,              // Color palette: full, 256, 16, or 8 (cycleable)
+        `--color-space=${this.currentColorSpace}`, // Color space: rgb or din99d (cycleable)
+        `--dither=${this.currentDitherMode}`,      // Dither mode: ordered, diffusion, or none (cycleable)
+        `--symbols=${this.currentSymbolSet}`,      // Symbol set: block, braille, ascii, etc (cycleable)
+        '--polite=on',                             // Suppress cursor control codes
         `--size=${width}x${height}`,
       ];
 
@@ -180,6 +220,114 @@ export class ImageService {
    */
   clearCache(): void {
     this.cache.clear();
+  }
+
+  /**
+   * Get the current color space
+   */
+  getCurrentColorSpace(): ColorSpace {
+    return this.currentColorSpace;
+  }
+
+  /**
+   * Cycle to the next color space
+   * Rotates through: rgb → din99d → rgb → ...
+   * Clears cache to force re-rendering with new color space
+   */
+  cycleColorSpace(): ColorSpace {
+    const currentIndex = AVAILABLE_COLOR_SPACES.indexOf(this.currentColorSpace);
+    const nextIndex = (currentIndex + 1) % AVAILABLE_COLOR_SPACES.length;
+    this.currentColorSpace = AVAILABLE_COLOR_SPACES[nextIndex];
+
+    // Clear cache to force re-rendering with new color space
+    this.clearCache();
+
+    if (this.debugMode) {
+      console.error(`[ImageService] Cycled color space to: ${this.currentColorSpace}`);
+    }
+
+    return this.currentColorSpace;
+  }
+
+  /**
+   * Get the current color mode (palette size)
+   */
+  getColorMode(): ColorMode {
+    return this.colorMode;
+  }
+
+  /**
+   * Cycle to the next color mode
+   * Rotates through: full → 256 → 16 → 8 → full → ...
+   * Clears cache to force re-rendering with new color mode
+   */
+  cycleColorMode(): ColorMode {
+    const currentIndex = AVAILABLE_COLOR_MODES.indexOf(this.colorMode);
+    const nextIndex = (currentIndex + 1) % AVAILABLE_COLOR_MODES.length;
+    this.colorMode = AVAILABLE_COLOR_MODES[nextIndex];
+
+    // Clear cache to force re-rendering with new color mode
+    this.clearCache();
+
+    if (this.debugMode) {
+      console.error(`[ImageService] Cycled color mode to: ${this.colorMode}`);
+    }
+
+    return this.colorMode;
+  }
+
+  /**
+   * Get the current dither mode
+   */
+  getCurrentDitherMode(): DitherMode {
+    return this.currentDitherMode;
+  }
+
+  /**
+   * Cycle to the next dither mode
+   * Rotates through: ordered → diffusion → none → ordered → ...
+   * Clears cache to force re-rendering with new dither mode
+   */
+  cycleDitherMode(): DitherMode {
+    const currentIndex = AVAILABLE_DITHER_MODES.indexOf(this.currentDitherMode);
+    const nextIndex = (currentIndex + 1) % AVAILABLE_DITHER_MODES.length;
+    this.currentDitherMode = AVAILABLE_DITHER_MODES[nextIndex];
+
+    // Clear cache to force re-rendering with new dither mode
+    this.clearCache();
+
+    if (this.debugMode) {
+      console.error(`[ImageService] Cycled dither mode to: ${this.currentDitherMode}`);
+    }
+
+    return this.currentDitherMode;
+  }
+
+  /**
+   * Get the current symbol set
+   */
+  getCurrentSymbolSet(): SymbolSet {
+    return this.currentSymbolSet;
+  }
+
+  /**
+   * Cycle to the next symbol set
+   * Rotates through: block → braille → ascii → half → quad → block → ...
+   * Clears cache to force re-rendering with new symbol set
+   */
+  cycleSymbolSet(): SymbolSet {
+    const currentIndex = AVAILABLE_SYMBOL_SETS.indexOf(this.currentSymbolSet);
+    const nextIndex = (currentIndex + 1) % AVAILABLE_SYMBOL_SETS.length;
+    this.currentSymbolSet = AVAILABLE_SYMBOL_SETS[nextIndex];
+
+    // Clear cache to force re-rendering with new symbol set
+    this.clearCache();
+
+    if (this.debugMode) {
+      console.error(`[ImageService] Cycled symbol set to: ${this.currentSymbolSet}`);
+    }
+
+    return this.currentSymbolSet;
   }
 }
 

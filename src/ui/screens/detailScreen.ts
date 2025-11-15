@@ -1,6 +1,7 @@
 import blessed from 'blessed';
 import { getTypeColor, colors } from '../theme.js';
 import { pokemonRepository } from '../../repositories/PokemonRepository.js';
+import { imageService } from '../../services/imageService.js';
 import type { PokemonDisplay } from '../../models/pokemon.js';
 import type { IDetailSection } from '../components/sections/IDetailSection.js';
 import { SpriteSection } from '../components/sections/SpriteSection.js';
@@ -15,6 +16,7 @@ export interface DetailScreenOptions {
   screen: blessed.Widgets.Screen;
   onBack?: () => void;
   onEvolutionSelect?: (pokemonName: string) => Promise<void>;
+  onFooterUpdate?: () => void;
 }
 
 /**
@@ -32,8 +34,10 @@ export class DetailScreen {
   private sections: IDetailSection[] = [];
   private tabbedPanel!: TabbedPanel;
   private evolutionSection!: EvolutionSection;
+  private spriteSection!: SpriteSection;
   private onBackCallback?: () => void;
   private onEvolutionSelectCallback?: (pokemonName: string) => Promise<void>;
+  private onFooterUpdateCallback?: () => void;
   private currentPokemon?: PokemonDisplay;
   private loadingBox?: blessed.Widgets.BoxElement;
 
@@ -41,6 +45,7 @@ export class DetailScreen {
     this.screen = options.screen;
     this.onBackCallback = options.onBack;
     this.onEvolutionSelectCallback = options.onEvolutionSelect;
+    this.onFooterUpdateCallback = options.onFooterUpdate;
 
     // Create main container
     this.container = blessed.box({
@@ -127,7 +132,7 @@ export class DetailScreen {
     });
 
     // Left column: Sprite
-    const spriteSection = new SpriteSection(leftColumn);
+    this.spriteSection = new SpriteSection(leftColumn);
 
     // Right column: Tabbed panel
     this.tabbedPanel = new TabbedPanel(rightColumn, this.screen, {
@@ -150,7 +155,7 @@ export class DetailScreen {
     this.tabbedPanel.addTab(movesSection, 'Moves', '4');
 
     // Only track sprite section (tabs are managed by TabbedPanel)
-    this.sections = [spriteSection];
+    this.sections = [this.spriteSection];
   }
 
   /**
@@ -166,6 +171,78 @@ export class DetailScreen {
     this.screen.key(['e'], () => {
       if (this.isVisible()) {
         this.navigateToEvolution();
+      }
+    });
+
+    this.screen.key(['c'], async () => {
+      if (this.isVisible() && this.currentPokemon) {
+        // Cycle to next color space
+        imageService.cycleColorSpace();
+
+        // Re-render the sprite with new color space (wait for completion)
+        await this.spriteSection.update(this.currentPokemon);
+
+        // Update footer to show new color space
+        if (this.onFooterUpdateCallback) {
+          this.onFooterUpdateCallback();
+        }
+
+        // Render screen to show updated sprite and footer
+        this.screen.render();
+      }
+    });
+
+    this.screen.key(['p'], async () => {
+      if (this.isVisible() && this.currentPokemon) {
+        // Cycle to next color mode (palette)
+        imageService.cycleColorMode();
+
+        // Re-render the sprite with new color mode (wait for completion)
+        await this.spriteSection.update(this.currentPokemon);
+
+        // Update footer to show new color mode
+        if (this.onFooterUpdateCallback) {
+          this.onFooterUpdateCallback();
+        }
+
+        // Render screen to show updated sprite and footer
+        this.screen.render();
+      }
+    });
+
+    this.screen.key(['d'], async () => {
+      if (this.isVisible() && this.currentPokemon) {
+        // Cycle to next dither mode
+        imageService.cycleDitherMode();
+
+        // Re-render the sprite with new dither mode (wait for completion)
+        await this.spriteSection.update(this.currentPokemon);
+
+        // Update footer to show new dither mode
+        if (this.onFooterUpdateCallback) {
+          this.onFooterUpdateCallback();
+        }
+
+        // Render screen to show updated sprite and footer
+        this.screen.render();
+      }
+    });
+
+    this.screen.key(['s'], async () => {
+      if (this.isVisible() && this.currentPokemon) {
+        // Cycle to next symbol set
+        imageService.cycleSymbolSet();
+
+        // Re-render the sprite with new symbol set (wait for completion)
+        await this.spriteSection.update(this.currentPokemon);
+
+        // Update footer to show new symbol set
+        if (this.onFooterUpdateCallback) {
+          this.onFooterUpdateCallback();
+        }
+
+        // Render screen to show updated sprite and footer
+        this.screen.render();
       }
     });
   }
