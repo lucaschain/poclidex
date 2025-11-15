@@ -10,7 +10,7 @@ import { pokemonService, type EvolutionStage } from '../../services/pokemonServi
  */
 export class EvolutionPresenter {
   /**
-   * Render evolution chain with methods
+   * Render evolution chain with methods - centered vertical layout
    */
   async renderEvolutionChain(
     pokemon: PokemonDisplay,
@@ -19,48 +19,51 @@ export class EvolutionPresenter {
     const root = pokemonService.parseEvolutionChainStructured(chain);
     const lines: string[] = [];
 
-    this.renderStage(root, pokemon.name, lines, '', true);
+    // Add spacing at top
+    lines.push('');
+
+    // Build linear evolution chain (only follows first branch for simplicity)
+    this.renderStageVertical(root, pokemon.name, lines);
+
+    // Add spacing at bottom
+    lines.push('');
 
     return lines;
   }
 
   /**
-   * Recursively render evolution stage
+   * Render evolution stage in centered vertical format
    */
-  private renderStage(
+  private renderStageVertical(
     stage: EvolutionStage,
     currentPokemon: string,
-    lines: string[],
-    prefix: string,
-    _isRoot: boolean
+    lines: string[]
   ): void {
     const isCurrent = stage.species === currentPokemon;
     const displayName = stage.species.charAt(0).toUpperCase() + stage.species.slice(1);
 
+    // Format Pokemon name with highlighting if current
     const formattedName = isCurrent
-      ? `{${colors.pokemonYellow}-fg}{bold}[${displayName}]{/bold}{/}`
-      : displayName;
+      ? `{center}{${colors.pokemonYellow}-fg}{bold}${displayName}{/bold}{/}{/center}`
+      : `{center}${displayName}{/center}`;
 
-    lines.push(prefix + formattedName);
+    lines.push(formattedName);
 
-    // Show evolution methods for each branch
+    // If there are evolutions, show method and continue
     if (stage.branches.length > 0) {
-      stage.branches.forEach((branch, index) => {
-        const isLast = index === stage.branches.length - 1;
-        const connector = stage.branches.length === 1 ? '     ↓' : (isLast ? ' └─' : ' ├─');
-        const method = branch.method ? ` ${branch.method}` : '';
+      const branch = stage.branches[0]; // Follow first branch for linear display
 
-        if (stage.branches.length === 1) {
-          // Simple linear evolution
-          lines.push(`${prefix}${connector}${method}`);
-          this.renderStage(branch, currentPokemon, lines, prefix, false);
-        } else {
-          // Branch evolution - show method inline with arrow
-          lines.push(`${prefix}${connector}${method} →`);
-          const branchPrefix = prefix + (isLast ? '    ' : ' │  ');
-          this.renderStage(branch, currentPokemon, lines, branchPrefix, false);
-        }
-      });
+      // Add down arrow
+      lines.push('{center}↓{/center}');
+
+      // Add evolution method if exists
+      if (branch.method) {
+        lines.push(`{center}${branch.method}{/center}`);
+        lines.push('{center}↓{/center}');
+      }
+
+      // Recursively render next stage
+      this.renderStageVertical(branch, currentPokemon, lines);
     }
   }
 
