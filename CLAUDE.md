@@ -37,6 +37,101 @@ npm run debug-colors   # Test terminal color capabilities
 DEBUG_COLORS=1 npm start  # Show Chafa command debug output
 ```
 
+## Releases & Versioning
+
+### Version Bumping
+
+**ALWAYS use npm version commands** to bump versions. This ensures consistency and automatically creates properly formatted git tags.
+
+```bash
+npm version patch   # Bug fixes (0.1.2 → 0.1.3)
+npm version minor   # New features (0.1.3 → 0.2.0)
+npm version major   # Breaking changes (0.1.3 → 1.0.0)
+```
+
+These commands automatically:
+1. Update version in `package.json`
+2. Create a git commit with the version change
+3. Create a git tag with "v" prefix (e.g., `v0.1.3`)
+
+### Tag Naming Convention
+
+**CRITICAL: Tags MUST use "v" prefix**
+
+- ✅ Correct: `v0.1.3`, `v0.2.0`, `v1.0.0`
+- ❌ Incorrect: `0.1.3`, `0.2.0`, `1.0.0`
+
+The "v" prefix is required because:
+- The GitHub Actions publish workflow triggers only on `v*` tags
+- It's the npm/semantic versioning standard
+- Manual tags without "v" prefix will NOT trigger automated publishing
+
+### Release Workflow
+
+```bash
+# 1. Ensure all tests pass
+npm test
+
+# 2. Bump version (choose patch/minor/major)
+npm version patch
+
+# 3. Push commits and tags to trigger CI/CD
+git push && git push --tags
+```
+
+**What happens next (automated):**
+1. GitHub Actions workflow (`.github/workflows/publish.yml`) is triggered by the `v*` tag
+2. CI runs tests and builds the project
+3. Package is automatically published to NPM registry
+4. GitHub Release is automatically created
+
+### NPM Publishing
+
+**Do NOT manually run `npm publish`** - publishing is fully automated via GitHub Actions.
+
+The `prepublishOnly` script in `package.json` ensures the project is built before publishing.
+
+### Common Mistakes
+
+**❌ Manually creating tags without "v" prefix:**
+```bash
+git tag 0.1.3        # WRONG - missing "v" prefix
+git commit -am "0.1.3"  # WRONG - manual version bump
+```
+
+**✅ Correct approach:**
+```bash
+npm version patch    # Creates v0.1.3 tag automatically
+```
+
+**If you accidentally created a tag without "v" prefix:**
+```bash
+# Delete local and remote tag
+git tag -d 0.1.3
+git push origin :refs/tags/0.1.3
+
+# Revert the version commit if needed
+git reset --hard HEAD~1
+
+# Redo release properly
+npm version patch
+git push && git push --tags
+```
+
+### Verifying a Release
+
+After pushing tags, verify the release succeeded:
+
+1. **GitHub Actions**: Check https://github.com/lucaschain/poclidex/actions
+   - Workflow should show green checkmark
+   - "Publish to NPM" job should complete successfully
+
+2. **NPM Registry**: Check https://www.npmjs.com/package/poclidex
+   - New version should appear within minutes
+
+3. **GitHub Releases**: Check https://github.com/lucaschain/poclidex/releases
+   - Automated release should be created with tag
+
 ## Architecture
 
 ### Layered Architecture
