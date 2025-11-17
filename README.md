@@ -20,17 +20,11 @@ poclidex
 
 ## Features
 
-- **All Pokemon Generations**: Access data for 1000+ Pokemon from all generations
-- **Fuzzy Search with Autocomplete**: Intelligent search with real-time suggestions
-- **ASCII Art Sprites**: Pokemon sprites rendered in your terminal using Chafa with truecolor (16M colors)
-- **Comprehensive Stats Display**:
-  - Base stats with visual progress bars
-  - EV (Effort Value) yield
-  - Abilities (including hidden abilities)
-  - Types with color coding
-- **Evolution Chains**: View complete evolution families with E key navigation
-- **Pokedex Color Palette**: Authentic Pokedex-themed UI
-- **Keyboard Navigation**: Vim-style keybindings supported
+- 1000+ Pokemon from all generations
+- Fuzzy search with autocomplete
+- ASCII art sprites (Chafa, truecolor/16M colors)
+- Stats display: base stats, EV yield, abilities, type colors
+- Evolution chain navigation
 
 ## Prerequisites
 
@@ -55,7 +49,7 @@ brew install chafa
 sudo pacman -S chafa
 ```
 
-**Note**: The application will work without Chafa installed, but Pokemon sprites will not be displayed.
+Works without Chafa but sprites won't display.
 
 ## Installation
 
@@ -88,8 +82,6 @@ npm run dev
 
 ### Shell Completion (Optional)
 
-Enable tab completion for Pokemon names in your shell:
-
 **Bash:**
 ```bash
 # Add to ~/.bashrc
@@ -101,10 +93,6 @@ eval "$(poclidex --completion bash)"
 # Add to ~/.zshrc
 eval "$(poclidex --completion zsh)"
 ```
-
-After adding the line, restart your shell or run `source ~/.bashrc` (or `~/.zshrc` for Zsh).
-
-Now you can type `poclidex char<TAB>` and it will autocomplete to Pokemon names like `charizard`, `charmander`, etc.
 
 ### Navigation
 
@@ -131,9 +119,8 @@ Now you can type `poclidex char<TAB>` and it will autocomplete to Pokemon names 
 
 ### Search Examples
 
-- **By name**: Type `pika` to find Pikachu (fuzzy matching works)
-- **By ID**: Type `25` to find Pokemon #25 (Pikachu)
-- **Partial match**: Type `char` to find Charizard, Charmander, Charmeleon
+- `pika` → Pikachu
+- `char` → Charizard, Charmander, Charmeleon
 
 ## Project Structure
 
@@ -202,7 +189,7 @@ Type-specific colors are used for Pokemon types (Fire: red/orange, Water: blue, 
 
 **Sprites look washed out or limited to 256 colors:**
 
-The app automatically detects your terminal's color capabilities. For the best experience with vibrant, full-color sprites, your terminal should support **truecolor** (16 million colors).
+The app auto-detects your terminal's color capabilities. Truecolor (16M colors) is recommended.
 
 **Check your terminal's color support:**
 ```bash
@@ -223,7 +210,7 @@ Or run the standalone test:
    ```
    Then reload: `tmux source-file ~/.tmux.conf`
 
-2. **Terminal emulator recommendations** (with truecolor support):
+2. **Terminal emulators:**
    - **macOS**: iTerm2, Kitty, Alacritty, WezTerm
    - **Linux**: Kitty, Alacritty, GNOME Terminal 3.x+, Konsole
    - **Windows**: Windows Terminal, WezTerm
@@ -267,13 +254,7 @@ DEBUG_COLORS=1 npm start
 
 ## Contributing
 
-This project was built as a demonstration of TypeScript CLI development with:
-- Type-safe API integration
-- Terminal UI design
-- Fuzzy search implementation
-- ASCII art rendering
-
-Feel free to extend it with additional features like:
+Possible additions:
 - Move details and type effectiveness calculator
 - Comparison mode for two Pokemon
 - Favorites/bookmarks system
