@@ -129,10 +129,6 @@ const screen = blessed.screen({
   smartCSR: true,
   title: 'Pokedex',
   fullUnicode: true,
-  style: {
-    bg: colors.defaultBg,
-    fg: 'white',
-  },
 });
 
 // Create header
@@ -142,11 +138,11 @@ blessed.box({
   left: 0,
   width: '100%',
   height: 3,
-  content: '{center}{bold}POKEDEX{/bold}{/center}',
+  content: '{center}{bold}POCLIDEX{/bold}{/center}',
   tags: true,
   style: {
     fg: theme.header.fg,
-    bg: colors.darkBg,
+    bg: colors.navyBlue,
     bold: theme.header.bold,
     border: {
       fg: colors.pokedexRed,
@@ -166,7 +162,7 @@ const mainContent = blessed.box({
   height: 'shrink',
   bottom: 3,
   style: {
-    bg: colors.defaultBg,
+    bg: 'transparent',
   },
 });
 

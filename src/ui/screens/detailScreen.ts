@@ -10,6 +10,8 @@ import { StatsSection } from '../components/sections/StatsSection.js';
 import { OverviewSection } from '../components/sections/OverviewSection.js';
 import { MovesSection } from '../components/sections/MovesSection.js';
 import { TabbedPanel } from '../components/TabbedPanel.js';
+import { LoadingModal } from '../components/LoadingModal.js';
+import type { LoadingPhase, LoadingStatus, LoadingPhaseInfo } from '../types/loadingTypes.js';
 
 export interface DetailScreenOptions {
   parent: blessed.Widgets.Node;
@@ -39,7 +41,7 @@ export class DetailScreen {
   private onEvolutionSelectCallback?: (pokemonName: string) => Promise<void>;
   private onFooterUpdateCallback?: () => void;
   private currentPokemon?: PokemonDisplay;
-  private loadingBox?: blessed.Widgets.BoxElement;
+  private loadingModal?: LoadingModal;
   private currentLoadId = 0;
 
   constructor(options: DetailScreenOptions) {
@@ -148,6 +150,13 @@ export class DetailScreen {
     const statsSection = new StatsSection(rightColumn);
     const movesSection = new MovesSection(rightColumn);
 
+    // Set status callback for all sections
+    const statusCallback = this.updateLoadingStatus.bind(this);
+    this.spriteSection.setStatusCallback(statusCallback);
+    this.overviewSection.setStatusCallback(statusCallback);
+    statsSection.setStatusCallback(statusCallback);
+    movesSection.setStatusCallback(statusCallback);
+
     // Add tabs (1-3 shortcuts) - Evolution is now part of Overview
     this.tabbedPanel.addTab(this.overviewSection, 'Overview', '1');
     this.tabbedPanel.addTab(statsSection, 'Stats', '2');
@@ -253,11 +262,16 @@ export class DetailScreen {
     // Track this operation to prevent race conditions from rapid F key presses
     const loadId = ++this.currentLoadId;
 
+    // Hide detail screen if it's currently visible (from previous Pokemon)
+    this.hide();
+
     this.showLoading(name);
 
     try {
-      // Load Pokemon data
+      // Phase 1: Load Pokemon data
+      this.updateLoadingStatus('pokemon', 'loading');
       const pokemon = await pokemonRepository.getPokemonDetails(name);
+      this.updateLoadingStatus('pokemon', 'complete');
 
       // Ignore stale results if a newer operation has started
       if (loadId !== this.currentLoadId) {
@@ -269,20 +283,12 @@ export class DetailScreen {
       // Update header with Pokemon name and types
       this.displayHeader(pokemon);
 
-      // Update all sections with Pokemon data
+      // Update all sections with Pokemon data (phases 2-5 tracked by sections)
       await this.updateAllSections(pokemon);
 
       // Check again after async operations
       if (loadId !== this.currentLoadId) {
         return;
-      }
-
-      this.show();
-
-      // Focus the active tab to ensure keyboard navigation works
-      const activeSection = this.tabbedPanel.getActiveSection();
-      if (activeSection && activeSection.focus) {
-        activeSection.focus();
       }
     } catch (error) {
       // Only show error if this is still the current operation
@@ -290,9 +296,18 @@ export class DetailScreen {
         this.displayError(error as Error);
       }
     } finally {
-      // Only hide loading if this is still the current operation
+      // Only hide loading and show detail screen if this is still the current operation
       if (loadId === this.currentLoadId) {
         this.hideLoading();
+
+        // Show detail screen after loading is complete
+        this.show();
+
+        // Focus the active tab to ensure keyboard navigation works
+        const activeSection = this.tabbedPanel.getActiveSection();
+        if (activeSection && activeSection.focus) {
+          activeSection.focus();
+        }
       }
     }
   }
@@ -419,48 +434,36 @@ export class DetailScreen {
   }
 
   /**
-   * Show loading indicator
+   * Show loading indicator with progress tracking
    */
   private showLoading(pokemonName: string): void {
-    // Destroy existing loading box if present to prevent orphans
-    if (this.loadingBox) {
-      this.loadingBox.destroy();
-      this.loadingBox = undefined;
-    }
+    // Initialize loading phases with all pending
+    const phases: LoadingPhaseInfo[] = [
+      { phase: 'pokemon', label: 'Pokemon data', status: 'pending' },
+      { phase: 'sprite', label: 'Sprite', status: 'pending' },
+      { phase: 'evolution', label: 'Evolution chain', status: 'pending' },
+      { phase: 'abilities', label: 'Abilities', status: 'pending' },
+      { phase: 'moves', label: 'Moves', status: 'pending' },
+    ];
 
-    // Create centered loading box overlay
-    this.loadingBox = blessed.box({
-      parent: this.screen,
-      top: 'center',
-      left: 'center',
-      width: 50,
-      height: 5,
-      tags: true,
-      valign: 'middle',
-      border: {
-        type: 'line',
-      },
-      style: {
-        border: {
-          fg: 'yellow',
-        },
-      },
-    });
+    // Create and show loading modal
+    this.loadingModal = new LoadingModal(this.screen, pokemonName, phases);
+    this.loadingModal.show();
+  }
 
-    const displayName = pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1);
-    this.loadingBox.setContent(`{center}{bold}Loading ${displayName}...{/bold}{/center}`);
-    this.screen.render();
+  /**
+   * Update loading status for a specific phase
+   */
+  private updateLoadingStatus(phase: LoadingPhase, status: LoadingStatus): void {
+    this.loadingModal?.updatePhase(phase, status);
   }
 
   /**
    * Hide loading indicator
    */
   private hideLoading(): void {
-    if (this.loadingBox) {
-      this.loadingBox.destroy();
-      this.loadingBox = undefined;
-      this.screen.render();
-    }
+    this.loadingModal?.hide();
+    this.loadingModal = undefined;
   }
 
   /**

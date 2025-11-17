@@ -36,7 +36,8 @@ export class SpriteSection extends BaseDetailSection {
     this.widget.setContent('Loading sprite...');
     this.widget.screen.render();
 
-    try {
+    // Use helper to automatically report loading status
+    await this.reportPhaseStatus('sprite', async () => {
       const spriteUrl = pokemon.artworkSprite || pokemon.sprite;
       if (spriteUrl) {
         // Calculate responsive dimensions based on available space
@@ -58,9 +59,9 @@ export class SpriteSection extends BaseDetailSection {
       } else {
         this.widget.setContent('No sprite available');
       }
-    } catch (error) {
+    }).catch(() => {
       this.widget.setContent('Failed to load sprite');
-    }
+    });
 
     this.widget.screen.render();
   }

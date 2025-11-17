@@ -58,8 +58,8 @@ export class OverviewSection extends BaseDetailSection {
     lines.push(`{${colors.pokemonYellow}-fg}{bold}Evolution{/bold}{/}`);
     lines.push('');
 
-    // Render evolution chain
-    try {
+    // Render evolution chain with automatic status reporting
+    await this.reportPhaseStatus('evolution', async () => {
       const chain = await pokemonRepository.getEvolutionChain(pokemon);
       const evolutionLines = await this.evolutionPresenter.renderEvolutionChain(pokemon, chain);
 
@@ -67,10 +67,10 @@ export class OverviewSection extends BaseDetailSection {
       this.evolutionOptions = this.evolutionPresenter.getEvolutionOptions(chain);
 
       lines.push(...evolutionLines);
-    } catch (error) {
+    }).catch(() => {
       lines.push('{gray-fg}No evolution data available{/}');
       this.evolutionOptions = [];
-    }
+    });
 
     this.widget.setContent(lines.join('\n'));
     this.widget.screen.render();

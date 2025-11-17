@@ -50,8 +50,10 @@ export class StatsSection extends BaseDetailSection {
     this.widget.setContent(lines.join('\n') + '\n\n{gray-fg}Loading abilities...{/}');
     this.widget.screen.render();
 
-    // Render abilities using presenter (async) with widget for dynamic width calculation
-    const abilityLines = await this.presenter.renderAbilities(pokemon, this.widget);
+    // Render abilities using presenter (async) with automatic status reporting
+    const abilityLines = await this.reportPhaseStatus('abilities', async () => {
+      return await this.presenter.renderAbilities(pokemon, this.widget);
+    });
     lines.push(...abilityLines);
 
     this.widget.setContent(lines.join('\n'));

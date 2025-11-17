@@ -138,7 +138,8 @@ export class MovesSection extends BaseDetailSection {
     this.descriptionBox.setContent('');
     this.table.screen.render();
 
-    try {
+    // Use helper to automatically report loading status
+    await this.reportPhaseStatus('moves', async () => {
       // Fetch moves
       this.moves = await pokemonRepository.getMoves(pokemon.id);
 
@@ -156,11 +157,11 @@ export class MovesSection extends BaseDetailSection {
       this.updateDescription();
 
       this.table.screen.render();
-    } catch (error) {
+    }).catch((error) => {
       // Show error
       this.table.setData([['Error loading moves'], [(error as Error).message]]);
       this.descriptionBox.setContent('Failed to load move data');
       this.table.screen.render();
-    }
+    });
   }
 }
