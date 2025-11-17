@@ -1,23 +1,25 @@
 #!/usr/bin/env node
 
-import blessed from 'blessed';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { theme, colors } from './ui/theme.js';
-import { HomeScreen } from './ui/screens/homeScreen.js';
-import { DetailScreen } from './ui/screens/detailScreen.js';
-import { HelpPanel } from './ui/components/HelpPanel.js';
-import { generationService } from './services/generationService.js';
-import { logTerminalInfo } from './utils/terminalDetection.js';
+import blessed from "blessed";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import { theme, colors } from "./ui/theme.js";
+import { HomeScreen } from "./ui/screens/homeScreen.js";
+import { DetailScreen } from "./ui/screens/detailScreen.js";
+import { HelpPanel } from "./ui/components/HelpPanel.js";
+import { generationService } from "./services/generationService.js";
+import { logTerminalInfo } from "./utils/terminalDetection.js";
 
 // Get package.json for version info
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'));
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, "../package.json"), "utf-8"),
+);
 
 // Handle --help flag
-if (process.argv.includes('--help') || process.argv.includes('-h')) {
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
   console.log(`
 poclidex v${packageJson.version} - Interactive CLI Pokedex
 
@@ -50,25 +52,24 @@ Keyboard Shortcuts:
 }
 
 // Handle --version flag
-if (process.argv.includes('--version') || process.argv.includes('-v')) {
+if (process.argv.includes("--version") || process.argv.includes("-v")) {
   console.log(packageJson.version);
   process.exit(0);
 }
 
 // Handle --completion flag for shell completion
-if (process.argv.includes('--completion')) {
-  const shell = process.argv[process.argv.indexOf('--completion') + 1] || 'bash';
+if (process.argv.includes("--completion")) {
+  const shell =
+    process.argv[process.argv.indexOf("--completion") + 1] || "bash";
 
   (async () => {
     try {
-      const { pokemonService } = await import('./services/pokemonService.js');
+      const { pokemonService } = await import("./services/pokemonService.js");
       const pokemonList = await pokemonService.loadPokemonList();
-      const names = pokemonList.map(p => p.name).join(' ');
+      const names = pokemonList.map((p) => p.name).join(" ");
 
-      if (shell === 'bash') {
+      if (shell === "bash") {
         console.log(`# Bash completion for poclidex
-# Add this to your ~/.bashrc or ~/.bash_profile:
-# eval "$(poclidex --completion bash)"
 
 _poclidex_completions() {
   local cur="\${COMP_WORDS[COMP_CWORD]}"
@@ -80,11 +81,9 @@ _poclidex_completions() {
 
 complete -F _poclidex_completions poclidex
 `);
-      } else if (shell === 'zsh') {
-        const zshList = pokemonList.map(p => `'${p.name}'`).join('\n    ');
+      } else if (shell === "zsh") {
+        const zshList = pokemonList.map((p) => `'${p.name}'`).join("\n    ");
         console.log(`# Zsh completion for poclidex
-# Add this to your ~/.zshrc:
-# eval "$(poclidex --completion zsh)"
 
 #compdef poclidex
 
@@ -100,12 +99,12 @@ _poclidex() {
 _poclidex
 `);
       } else {
-        console.error('Unsupported shell. Use: bash or zsh');
+        console.error("Unsupported shell. Use: bash or zsh");
         process.exit(1);
       }
       process.exit(0);
     } catch (error) {
-      console.error('Error loading Pokemon list:', error);
+      console.error("Error loading Pokemon list:", error);
       process.exit(1);
     }
   })();
@@ -114,20 +113,20 @@ _poclidex
 }
 
 // Check for debug colors flag
-if (process.argv.includes('--debug-colors')) {
+if (process.argv.includes("--debug-colors")) {
   logTerminalInfo();
   process.exit(0);
 }
 
 // Parse CLI arguments for direct Pokemon launch
 // Filter out flags (anything starting with - or --)
-const args = process.argv.slice(2).filter(arg => !arg.startsWith('-'));
+const args = process.argv.slice(2).filter((arg) => !arg.startsWith("-"));
 const cliPokemonName = args[0];
 
 // Create the blessed screen
 const screen = blessed.screen({
   smartCSR: true,
-  title: 'Pokedex',
+  title: "Pokedex",
   fullUnicode: true,
 });
 
@@ -136,9 +135,9 @@ blessed.box({
   parent: screen,
   top: 0,
   left: 0,
-  width: '100%',
+  width: "100%",
   height: 3,
-  content: '{center}{bold}POCLIDEX{/bold}{/center}',
+  content: "{center}{bold}POCLIDEX{/bold}{/center}",
   tags: true,
   style: {
     fg: theme.header.fg,
@@ -149,7 +148,7 @@ blessed.box({
     },
   },
   border: {
-    type: 'line',
+    type: "line",
   },
 });
 
@@ -158,11 +157,11 @@ const mainContent = blessed.box({
   parent: screen,
   top: 3,
   left: 0,
-  width: '100%',
-  height: 'shrink',
+  width: "100%",
+  height: "shrink",
   bottom: 3,
   style: {
-    bg: 'transparent',
+    bg: "transparent",
   },
 });
 
@@ -171,7 +170,7 @@ const footer = blessed.box({
   parent: screen,
   bottom: 0,
   left: 0,
-  width: '100%',
+  width: "100%",
   height: 3,
   tags: true,
   style: {
@@ -182,18 +181,18 @@ const footer = blessed.box({
     },
   },
   border: {
-    type: 'line',
+    type: "line",
   },
 });
 
-function updateFooter(mode: 'home' | 'detail') {
-  if (mode === 'home') {
+function updateFooter(mode: "home" | "detail") {
+  if (mode === "home") {
     footer.setContent(
-      '{center}Ctrl+S: Search | Arrow Keys: Navigate | Enter: Select | ?: Help | Ctrl+C: Quit{/center}'
+      "{center}Ctrl+S: Search | Arrow Keys: Navigate | Enter: Select | ?: Help | Ctrl+C: Quit{/center}",
     );
   } else {
     footer.setContent(
-      '{center}Tab/1-3: Tabs | Esc: Back | Ctrl+S: Search | ?: Help | Ctrl+C: Quit{/center}'
+      "{center}Tab/1-3: Tabs | Esc: Back | Ctrl+S: Search | ?: Help | Ctrl+C: Quit{/center}",
     );
   }
   screen.render();
@@ -205,7 +204,7 @@ const homeScreen = new HomeScreen({
   screen,
   onPokemonSelect: async (name) => {
     await detailScreen.showPokemon(name);
-    updateFooter('detail');
+    updateFooter("detail");
   },
 });
 
@@ -215,13 +214,13 @@ const detailScreen = new DetailScreen({
   onBack: () => {
     detailScreen.hide();
     homeScreen.show();
-    updateFooter('home');
+    updateFooter("home");
   },
   onEvolutionSelect: async (name) => {
     await detailScreen.showPokemon(name);
   },
   onFooterUpdate: () => {
-    updateFooter('detail');
+    updateFooter("detail");
   },
 });
 
@@ -231,35 +230,36 @@ const helpPanel = new HelpPanel(screen);
 // Conditional startup based on CLI argument
 if (cliPokemonName) {
   // Launch directly to detail screen with provided Pokemon name
-  detailScreen.showPokemon(cliPokemonName)
+  detailScreen
+    .showPokemon(cliPokemonName)
     .then(() => {
-      updateFooter('detail');
+      updateFooter("detail");
       screen.render();
     })
     .catch((_error) => {
       console.error(`Error: Could not find Pokemon "${cliPokemonName}"`);
-      console.error('Usage: pokedex [pokemon-name]');
+      console.error("Usage: pokedex [pokemon-name]");
       process.exit(1);
     });
 } else {
   // Normal startup - show home screen
-  updateFooter('home');
+  updateFooter("home");
   screen.render();
 }
 
 // Global hotkeys
-screen.key(['C-c'], () => {
+screen.key(["C-c"], () => {
   return process.exit(0);
 });
 
 // Ctrl+S: Global search navigation
-screen.key(['C-s'], () => {
+screen.key(["C-s"], () => {
   if (detailScreen.isVisible()) {
     // On detail screen: go back to home and focus search
     detailScreen.hide();
     homeScreen.show();
     homeScreen.focusSearch();
-    updateFooter('home');
+    updateFooter("home");
   } else {
     // On home screen: just focus search
     homeScreen.focusSearch();
@@ -267,79 +267,79 @@ screen.key(['C-s'], () => {
 });
 
 // Help panel toggle (? key and Ctrl+H)
-screen.key(['?', 'C-h'], () => {
+screen.key(["?", "C-h"], () => {
   helpPanel.toggle();
 });
 
 // F1-F9: Set session generation
-screen.key(['f1'], async () => {
+screen.key(["f1"], async () => {
   generationService.setSessionGeneration(1);
-  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
-    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  if (detailScreen.isVisible() && detailScreen["currentPokemon"]) {
+    await detailScreen.showPokemon(detailScreen["currentPokemon"].name);
   }
 });
 
-screen.key(['f2'], async () => {
+screen.key(["f2"], async () => {
   generationService.setSessionGeneration(2);
-  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
-    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  if (detailScreen.isVisible() && detailScreen["currentPokemon"]) {
+    await detailScreen.showPokemon(detailScreen["currentPokemon"].name);
   }
 });
 
-screen.key(['f3'], async () => {
+screen.key(["f3"], async () => {
   generationService.setSessionGeneration(3);
-  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
-    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  if (detailScreen.isVisible() && detailScreen["currentPokemon"]) {
+    await detailScreen.showPokemon(detailScreen["currentPokemon"].name);
   }
 });
 
-screen.key(['f4'], async () => {
+screen.key(["f4"], async () => {
   generationService.setSessionGeneration(4);
-  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
-    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  if (detailScreen.isVisible() && detailScreen["currentPokemon"]) {
+    await detailScreen.showPokemon(detailScreen["currentPokemon"].name);
   }
 });
 
-screen.key(['f5'], async () => {
+screen.key(["f5"], async () => {
   generationService.setSessionGeneration(5);
-  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
-    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  if (detailScreen.isVisible() && detailScreen["currentPokemon"]) {
+    await detailScreen.showPokemon(detailScreen["currentPokemon"].name);
   }
 });
 
-screen.key(['f6'], async () => {
+screen.key(["f6"], async () => {
   generationService.setSessionGeneration(6);
-  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
-    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  if (detailScreen.isVisible() && detailScreen["currentPokemon"]) {
+    await detailScreen.showPokemon(detailScreen["currentPokemon"].name);
   }
 });
 
-screen.key(['f7'], async () => {
+screen.key(["f7"], async () => {
   generationService.setSessionGeneration(7);
-  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
-    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  if (detailScreen.isVisible() && detailScreen["currentPokemon"]) {
+    await detailScreen.showPokemon(detailScreen["currentPokemon"].name);
   }
 });
 
-screen.key(['f8'], async () => {
+screen.key(["f8"], async () => {
   generationService.setSessionGeneration(8);
-  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
-    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  if (detailScreen.isVisible() && detailScreen["currentPokemon"]) {
+    await detailScreen.showPokemon(detailScreen["currentPokemon"].name);
   }
 });
 
-screen.key(['f9'], async () => {
+screen.key(["f9"], async () => {
   generationService.setSessionGeneration(9);
-  if (detailScreen.isVisible() && detailScreen['currentPokemon']) {
-    await detailScreen.showPokemon(detailScreen['currentPokemon'].name);
+  if (detailScreen.isVisible() && detailScreen["currentPokemon"]) {
+    await detailScreen.showPokemon(detailScreen["currentPokemon"].name);
   }
 });
 
 // Handle graceful shutdown
-process.on('SIGINT', () => {
+process.on("SIGINT", () => {
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
+process.on("SIGTERM", () => {
   process.exit(0);
 });

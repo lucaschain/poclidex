@@ -1,6 +1,6 @@
 # Pokedex CLI
 
-An interactive command-line Pokedex application built with TypeScript, featuring fuzzy search, ASCII art sprites, and comprehensive Pokemon data.
+An interactive command-line Pokedex application built with TypeScript, featuring fuzzy search and ASCII art sprites.
 
 ![Poclidex Screenshot](docs/screenshot.png)
 
@@ -35,16 +35,19 @@ poclidex
 ### Installing Chafa
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt-get install chafa
 ```
 
 **macOS:**
+
 ```bash
 brew install chafa
 ```
 
 **Arch Linux:**
+
 ```bash
 sudo pacman -S chafa
 ```
@@ -53,28 +56,20 @@ Works without Chafa but sprites won't display.
 
 ## Installation
 
-1. Clone or navigate to the repository:
 ```bash
+# 1. Clone or navigate to the repository:
 cd pokedex
-```
 
-2. Install dependencies:
-```bash
+# 2. Install dependencies:
 npm install
-```
 
-3. Build the project:
-```bash
+# 3. Build the project:
 npm run build
-```
 
-4. Run the application:
-```bash
+# 4. Run the application:
 npm start
-```
 
-Alternatively, build and run in one command:
-```bash
+# Alternatively, build and run in one command:
 npm run dev
 ```
 
@@ -83,61 +78,23 @@ npm run dev
 ### Shell Completion (Optional)
 
 **Bash:**
+
 ```bash
-# Add to ~/.bashrc
-eval "$(poclidex --completion bash)"
+# bigger completion script, no delay on shell load
+poclidex --completion bash >> ~/.bashrc
+
+# or smaller completion script, small delay on shell load
+echo -n 'eval "$(poclidex --completion bash)"' >> ~/.bashrc
 ```
 
 **Zsh:**
+
 ```bash
-# Add to ~/.zshrc
-eval "$(poclidex --completion zsh)"
-```
+# bigger completion script, no delay on shell load
+poclidex --completion zsh >> ~/.zshrc
 
-### Navigation
-
-**Home Screen (Pokemon List):**
-- `Arrow Keys` or `j/k` - Navigate up/down through Pokemon list
-- `Enter` - Select Pokemon to view details
-- `Ctrl+S` - Focus search box (works from anywhere - returns to home if on detail screen)
-- `g` - Jump to top of list
-- `G` - Jump to bottom of list
-- `Q` or `Ctrl+C` - Quit application
-
-**Search Box:**
-- Type to search for Pokemon by name (fuzzy matching)
-- Type a number to search by Pokedex ID
-- `Arrow Down` - Navigate to autocomplete suggestions
-- `Enter` - Select autocomplete suggestion
-- `Esc` - Clear search and return to list
-
-**Detail Screen:**
-- `E` - Navigate to evolution (select from menu if multiple options)
-- `Ctrl+S` - Return to home and focus search (quick Pokemon lookup)
-- `Esc` or `B` - Return to Pokemon list
-- `Q` or `Ctrl+C` - Quit application
-
-### Search Examples
-
-- `pika` → Pikachu
-- `char` → Charizard, Charmander, Charmeleon
-
-## Project Structure
-
-```
-pokedex/
-├── src/
-│   ├── api/              # Pokemon API client and types
-│   ├── services/         # Business logic (search, data, images)
-│   ├── ui/
-│   │   ├── screens/      # Home and detail screens
-│   │   ├── components/   # Reusable UI components
-│   │   └── theme.ts      # Color palette
-│   ├── models/           # Data transformation
-│   ├── utils/            # Utilities (cache, etc.)
-│   └── index.ts          # Entry point
-├── dist/                 # Compiled JavaScript
-└── package.json
+# or smaller completion script, small delay on shell load
+echo -n 'eval "$(poclidex --completion zsh)"' >> ~/.zshrc
 ```
 
 ## Technology Stack
@@ -158,30 +115,9 @@ pokedex/
 - `npm run watch` - Watch mode for development
 - `npm run debug-colors` - Test and debug terminal color support
 
-### Architecture
-
-The application follows a layered architecture:
-
-- **API Layer**: Wraps pokedex-promise-v2 with TypeScript types
-- **Services Layer**: Business logic for Pokemon data, search, and image conversion
-- **Models Layer**: Data transformation between API and UI formats
-- **UI Layer**: Blessed-based terminal interface with screens and components
-- **Caching**: LRU cache for Pokemon data and rendered sprites
-
 ## Data Sources
 
 All Pokemon data is fetched from the [PokeAPI v2](https://pokeapi.co/), a free and open Pokemon API.
-
-## Color Palette
-
-The application uses the classic Pokedex color scheme:
-
-- **Red** (#CC0000) - Headers and borders
-- **Yellow** (#FFCB05) - Pokemon names and highlights
-- **Blue** (#3D7DCA) - Stats and info
-- **Navy** (#003A70) - Search background
-
-Type-specific colors are used for Pokemon types (Fire: red/orange, Water: blue, Grass: green, etc.)
 
 ## Troubleshooting
 
@@ -192,11 +128,13 @@ Type-specific colors are used for Pokemon types (Fire: red/orange, Water: blue, 
 The app auto-detects your terminal's color capabilities. Truecolor (16M colors) is recommended.
 
 **Check your terminal's color support:**
+
 ```bash
 npm run debug-colors
 ```
 
 Or run the standalone test:
+
 ```bash
 ./scripts/test-colors.sh
 ```
@@ -204,10 +142,12 @@ Or run the standalone test:
 **Fix truecolor support:**
 
 1. **Using tmux?** Add to `~/.tmux.conf`:
+
    ```bash
-   set -g default-terminal "screen-256color"
-   set -ga terminal-overrides ",*256col*:Tc"
+   set -g default-terminal "${TERM}"
+   set -a terminal-features 'xterm-256color:RGB'
    ```
+
    Then reload: `tmux source-file ~/.tmux.conf`
 
 2. **Terminal emulators:**
@@ -216,11 +156,13 @@ Or run the standalone test:
    - **Windows**: Windows Terminal, WezTerm
 
 3. **Set environment variable:**
+
    ```bash
    export COLORTERM=truecolor
    ```
 
 4. **Force color mode:**
+
    ```bash
    # Force truecolor
    export POKEDEX_COLORS=full
@@ -232,6 +174,7 @@ Or run the standalone test:
    ```
 
 **Debug Chafa commands:**
+
 ```bash
 DEBUG_COLORS=1 npm start
 ```
@@ -255,19 +198,17 @@ DEBUG_COLORS=1 npm start
 ## Contributing
 
 Possible additions:
-- Move details and type effectiveness calculator
-- Comparison mode for two Pokemon
-- Favorites/bookmarks system
-- Shiny sprite toggle
-- Export Pokemon data to JSON
+
+- type effectiveness calculator
+- shiny sprite toggle
 
 ## License
 
-ISC
+[Zero-Clause BSD](https://opensource.org/license/0bsd)
 
 ## Acknowledgments
 
 - [PokeAPI](https://pokeapi.co/) for the comprehensive Pokemon database
 - [Blessed](https://github.com/chjj/blessed) for the terminal UI framework
 - [Chafa](https://hpjansson.org/chafa/) for ASCII art rendering
-- Pokemon is © Nintendo/Creatures Inc./GAME FREAK inc.
+- Pokémon is © Nintendo/Creatures Inc./GAME FREAK inc.
