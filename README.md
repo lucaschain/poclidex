@@ -4,6 +4,20 @@ An interactive command-line Pokedex application built with TypeScript, featuring
 
 ![Poclidex Screenshot](docs/screenshot.png)
 
+## Quick Start (TL;DR)
+
+```bash
+# Install dependencies
+sudo apt-get install chafa  # Ubuntu/Debian
+brew install chafa          # macOS
+
+# Install globally
+npm install -g poclidex
+
+# Run
+poclidex
+```
+
 ## Features
 
 - **All Pokemon Generations**: Access data for 1000+ Pokemon from all generations
