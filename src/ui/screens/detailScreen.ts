@@ -436,6 +436,7 @@ export class DetailScreen {
       width: 50,
       height: 5,
       tags: true,
+      valign: 'middle',
       border: {
         type: 'line',
       },
