@@ -1,6 +1,6 @@
 {
   "name": "poclidex",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Interactive CLI Pokedex with fuzzy search, ASCII art sprites, and evolution chains",
   "type": "module",
   "main": "dist/index.js",
