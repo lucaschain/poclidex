@@ -9,6 +9,7 @@ An interactive CLI Pokedex built with TypeScript, Blessed (terminal UI), and Pok
 ## Essential Commands
 
 ### Development
+
 ```bash
 npm run build          # Compile TypeScript to dist/
 npm start              # Run compiled application
@@ -17,6 +18,7 @@ npm run watch          # Watch mode for development
 ```
 
 ### Testing
+
 ```bash
 npm test               # Run all tests once
 npm run test:watch     # Run tests in watch mode
@@ -25,12 +27,14 @@ npm run test:ui        # Run tests with Vitest UI
 ```
 
 **Running a single test:**
+
 ```bash
 npm test -- src/models/pokemon.test.ts
 npm test -- -t "test name pattern"
 ```
 
 ### Debugging
+
 ```bash
 npm run debug-colors   # Test terminal color capabilities
 ./scripts/test-colors.sh  # Standalone color test
@@ -50,6 +54,7 @@ npm version major   # Breaking changes (0.1.3 → 1.0.0)
 ```
 
 These commands automatically:
+
 1. Update version in `package.json`
 2. Create a git commit with the version change
 3. Create a git tag with "v" prefix (e.g., `v0.1.3`)
@@ -62,6 +67,7 @@ These commands automatically:
 - ❌ Incorrect: `0.1.3`, `0.2.0`, `1.0.0`
 
 The "v" prefix is required because:
+
 - The GitHub Actions publish workflow triggers only on `v*` tags
 - It's the npm/semantic versioning standard
 - Manual tags without "v" prefix will NOT trigger automated publishing
@@ -80,6 +86,7 @@ git push && git push --tags
 ```
 
 **What happens next (automated):**
+
 1. GitHub Actions workflow (`.github/workflows/publish.yml`) is triggered by the `v*` tag
 2. CI runs tests and builds the project
 3. Package is automatically published to NPM registry
@@ -94,17 +101,20 @@ The `prepublishOnly` script in `package.json` ensures the project is built befor
 ### Common Mistakes
 
 **❌ Manually creating tags without "v" prefix:**
+
 ```bash
 git tag 0.1.3        # WRONG - missing "v" prefix
 git commit -am "0.1.3"  # WRONG - manual version bump
 ```
 
 **✅ Correct approach:**
+
 ```bash
 npm version patch    # Creates v0.1.3 tag automatically
 ```
 
 **If you accidentally created a tag without "v" prefix:**
+
 ```bash
 # Delete local and remote tag
 git tag -d 0.1.3
@@ -148,23 +158,27 @@ The application follows a clean layered architecture with strict separation of c
 ### Key Architectural Patterns
 
 **Generation Filtering System:**
+
 - `generationService` (singleton) manages session-level generation setting (F1-F9 keys)
 - Pokemon data is filtered to show only types/abilities/moves available in that generation
 - Uses `getEffectiveGeneration()` to never show Pokemon before they existed
 - Historical data is handled via lookup tables in `src/constants/` (e.g., `abilityChanges.ts`)
 
 **Repository Pattern:**
+
 - `IPokemonRepository` interface defines data operations contract
 - `PokemonRepository` implementation handles caching and API calls
 - Enables easy testing with mock repositories
 
 **Section-Based UI:**
+
 - Detail screen uses `IDetailSection` interface for all tabs (Stats, Overview, Moves, Evolution)
 - `BaseDetailSection` provides common functionality
 - `TabbedPanel` component manages tab navigation and section visibility
 - Each section independently handles its own rendering via `update(pokemon: PokemonDisplay)`
 
 **Caching Strategy:**
+
 - LRU caches for Pokemon data (200 entries), evolution chains (50 entries), and sprites
 - Cache implementation in `src/utils/cache.ts`
 - Reduces API calls and improves performance
@@ -183,6 +197,7 @@ User Input → Screen (homeScreen/detailScreen)
 ### Image Handling
 
 **Sprite Rendering:**
+
 - `imageService` converts Pokemon sprites to ASCII art using Chafa (external binary)
 - Supports multiple color modes: full/256/16/8 colors (auto-detected or manual via `POKEDEX_COLORS` env var)
 - Color spaces: RGB (fast) vs DIN99d (accurate)
@@ -194,17 +209,20 @@ User Input → Screen (homeScreen/detailScreen)
 ### External Dependencies
 
 **Required:**
+
 - `chafa` binary for sprite rendering (app works without it, but no sprites)
 - PokeAPI internet connection for data fetching
 
 ## Code Conventions
 
 ### TypeScript Configuration
+
 - ES2022 modules (`type: "module"` in package.json)
 - Strict mode enabled with comprehensive checks
 - All imports must use `.js` extension (ESM requirement): `import { foo } from './bar.js'`
 
 ### Testing
+
 - Vitest for unit tests
 - Test files: `*.test.ts` alongside source files
 - UI components, API wrappers, and repository integration layer excluded from coverage
@@ -212,6 +230,7 @@ User Input → Screen (homeScreen/detailScreen)
 - Mock repositories used for testing business logic
 
 ### File Organization
+
 ```
 src/
 ├── api/              # PokeAPI wrapper + TypeScript types
@@ -230,19 +249,23 @@ src/
 ## Important Constraints
 
 ### Generation-Specific Data
+
 When modifying Pokemon data display, always consider generation filtering:
+
 - Types can change (e.g., Magnemite gains Steel type in Gen 2)
 - Abilities can be replaced across generations (see `abilityChanges.ts`)
 - Stats remain constant, but move availability varies
 - Use `generationService.getEffectiveGeneration()` for filtering logic
 
 ### Terminal Compatibility
+
 - Support 256-color and truecolor terminals
 - Graceful degradation when Chafa not installed
 - Handle tmux/SSH environments (COLORTERM variable)
 - Unicode support required for sprites and UI borders
 
 ### API Rate Limiting
+
 - PokeAPI has no authentication but can rate limit
 - Always cache API responses (use `LRUCache`)
 - Batch requests where possible
@@ -259,12 +282,14 @@ DEBUG_COLORS=1                 # Show Chafa command debugging
 ## Known Patterns
 
 **Adding a new detail section:**
+
 1. Implement `IDetailSection` or extend `BaseDetailSection`
 2. Add to tabs array in `detailScreen.ts`
 3. Implement `update(pokemon: PokemonDisplay)` method
 4. Section automatically integrated into tab navigation
 
 **Historical data handling:**
+
 - PokeAPI returns only current data
 - Historical changes tracked in `src/constants/` lookup tables
 - Apply historical filters in `transformPokemon()` based on generation parameter
