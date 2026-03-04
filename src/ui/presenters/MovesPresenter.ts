@@ -1,5 +1,5 @@
-import { getTypeColor } from '../theme.js';
-import type { MoveData } from '../../repositories/IPokemonRepository.js';
+import { getTypeColor } from "../theme.js";
+import type { MoveData } from "../../repositories/IPokemonRepository.js";
 
 /**
  * Presenter for formatting move data for display
@@ -13,16 +13,19 @@ export class MovesPresenter {
     const rows: string[][] = [];
 
     // Header row
-    rows.push(['Name', 'Type', 'Pwr', 'Acc', 'PP', 'Method']);
+    rows.push(["Name", "Type", "Pwr", "Acc", "PP", "Method"]);
 
     // Data rows
     for (const move of moves) {
       const name = this.formatMoveName(move.name);
       const type = this.formatType(move.type);
-      const power = move.power !== null ? move.power.toString() : '--';
-      const accuracy = move.accuracy !== null ? move.accuracy.toString() : '--';
+      const power = move.power !== null ? move.power.toString() : "--";
+      const accuracy = move.accuracy !== null ? move.accuracy.toString() : "--";
       const pp = move.pp.toString();
-      const method = this.formatLearnMethod(move.learnMethod, move.levelLearned);
+      const method = this.formatLearnMethod(
+        move.learnMethod,
+        move.levelLearned,
+      );
 
       rows.push([name, type, power, accuracy, pp, method]);
     }
@@ -35,9 +38,9 @@ export class MovesPresenter {
    */
   private formatMoveName(name: string): string {
     return name
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   }
 
   /**
@@ -54,14 +57,14 @@ export class MovesPresenter {
    */
   private formatLearnMethod(method: string, level?: number): string {
     switch (method) {
-      case 'level-up':
-        return level ? `Lv.${level}` : 'Lv.--';
-      case 'machine':
-        return 'TM';
-      case 'egg':
-        return 'Egg';
-      case 'tutor':
-        return 'Tutor';
+      case "level-up":
+        return level ? `Lv.${level}` : "Lv.--";
+      case "machine":
+        return "TM";
+      case "egg":
+        return "Egg";
+      case "tutor":
+        return "Tutor";
       default:
         return method;
     }
@@ -71,6 +74,6 @@ export class MovesPresenter {
    * Get description for a move
    */
   getDescription(move: MoveData): string {
-    return move.description || 'No description available.';
+    return move.description || "No description available.";
   }
 }

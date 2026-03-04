@@ -17,7 +17,7 @@ export interface AbilityChange {
   form?: string;
   oldAbility: string;
   newAbility: string;
-  abilitySlot: 'ability1' | 'ability2' | 'hidden';
+  abilitySlot: "ability1" | "ability2" | "hidden";
   changeGeneration: number;
   notes?: string;
 }
@@ -25,157 +25,159 @@ export interface AbilityChange {
 /**
  * Complete list of Pokemon with historical ability replacements.
  * Ordered chronologically by change generation.
+ * https://bulbapedia.bulbagarden.net/wiki/List_of_modified_Ability_access#Within_Generation_V
  */
 export const POKEMON_ABILITY_CHANGES: AbilityChange[] = [
   // Generation V (Within-generation - Black 2/White 2)
   {
     pokemonId: 550,
-    pokemonName: 'basculin',
-    form: 'blue-striped',
-    oldAbility: 'reckless',
-    newAbility: 'rock-head',
-    abilitySlot: 'ability1',
+    pokemonName: "basculin",
+    form: "blue-striped",
+    oldAbility: "reckless",
+    newAbility: "rock-head",
+    abilitySlot: "ability1",
     changeGeneration: 5,
-    notes: 'Changed within Generation V (Black 2/White 2)',
+    notes: "Changed within Generation V (Black 2/White 2)",
   },
 
   // Generation V → VI Changes (Hidden Abilities)
   {
     pokemonId: 145,
-    pokemonName: 'zapdos',
-    oldAbility: 'lightningrod',
-    newAbility: 'static',
-    abilitySlot: 'hidden',
+    pokemonName: "zapdos",
+    oldAbility: "lightningrod",
+    newAbility: "static",
+    abilitySlot: "hidden",
     changeGeneration: 6,
-    notes: 'Hidden ability was unobtainable in Gen 5',
+    notes: "Hidden ability was unobtainable in Gen 5",
   },
   {
     pokemonId: 543,
-    pokemonName: 'venipede',
-    oldAbility: 'quick-feet',
-    newAbility: 'speed-boost',
-    abilitySlot: 'hidden',
+    pokemonName: "venipede",
+    oldAbility: "quick-feet",
+    newAbility: "speed-boost",
+    abilitySlot: "hidden",
     changeGeneration: 6,
   },
   {
     pokemonId: 544,
-    pokemonName: 'whirlipede',
-    oldAbility: 'quick-feet',
-    newAbility: 'speed-boost',
-    abilitySlot: 'hidden',
+    pokemonName: "whirlipede",
+    oldAbility: "quick-feet",
+    newAbility: "speed-boost",
+    abilitySlot: "hidden",
     changeGeneration: 6,
   },
   {
     pokemonId: 545,
-    pokemonName: 'scolipede',
-    oldAbility: 'quick-feet',
-    newAbility: 'speed-boost',
-    abilitySlot: 'hidden',
+    pokemonName: "scolipede",
+    oldAbility: "quick-feet",
+    newAbility: "speed-boost",
+    abilitySlot: "hidden",
     changeGeneration: 6,
-    notes: 'Major competitive buff - Speed Boost is much stronger',
+    notes: "Major competitive buff - Speed Boost is much stronger",
   },
   {
     pokemonId: 607,
-    pokemonName: 'litwick',
-    oldAbility: 'shadow-tag',
-    newAbility: 'infiltrator',
-    abilitySlot: 'hidden',
+    pokemonName: "litwick",
+    oldAbility: "shadow-tag",
+    newAbility: "infiltrator",
+    abilitySlot: "hidden",
     changeGeneration: 6,
-    notes: 'Hidden ability was unobtainable in Gen 5',
+    notes: "Hidden ability was unobtainable in Gen 5",
   },
   {
     pokemonId: 608,
-    pokemonName: 'lampent',
-    oldAbility: 'shadow-tag',
-    newAbility: 'infiltrator',
-    abilitySlot: 'hidden',
+    pokemonName: "lampent",
+    oldAbility: "shadow-tag",
+    newAbility: "infiltrator",
+    abilitySlot: "hidden",
     changeGeneration: 6,
-    notes: 'Hidden ability was unobtainable in Gen 5',
+    notes: "Hidden ability was unobtainable in Gen 5",
   },
   {
     pokemonId: 609,
-    pokemonName: 'chandelure',
-    oldAbility: 'shadow-tag',
-    newAbility: 'infiltrator',
-    abilitySlot: 'hidden',
+    pokemonName: "chandelure",
+    oldAbility: "shadow-tag",
+    newAbility: "infiltrator",
+    abilitySlot: "hidden",
     changeGeneration: 6,
-    notes: 'Shadow Tag would have been extremely powerful; was unobtainable',
+    notes: "Shadow Tag would have been extremely powerful; was unobtainable",
   },
 
   // Generation VI → VII Changes
   {
     pokemonId: 94,
-    pokemonName: 'gengar',
-    oldAbility: 'levitate',
-    newAbility: 'cursed-body',
-    abilitySlot: 'ability1',
+    pokemonName: "gengar",
+    oldAbility: "levitate",
+    newAbility: "cursed-body",
+    abilitySlot: "ability1",
     changeGeneration: 7,
-    notes: 'Major nerf - lost Ground immunity, now vulnerable to Earthquake/Spikes',
+    notes:
+      "Major nerf - lost Ground immunity, now vulnerable to Earthquake/Spikes",
   },
   {
     pokemonId: 243,
-    pokemonName: 'raikou',
-    oldAbility: 'volt-absorb',
-    newAbility: 'inner-focus',
-    abilitySlot: 'hidden',
+    pokemonName: "raikou",
+    oldAbility: "volt-absorb",
+    newAbility: "inner-focus",
+    abilitySlot: "hidden",
     changeGeneration: 7,
-    notes: 'Hidden ability was unobtainable in Gen 5-6',
+    notes: "Hidden ability was unobtainable in Gen 5-6",
   },
   {
     pokemonId: 244,
-    pokemonName: 'entei',
-    oldAbility: 'flash-fire',
-    newAbility: 'inner-focus',
-    abilitySlot: 'hidden',
+    pokemonName: "entei",
+    oldAbility: "flash-fire",
+    newAbility: "inner-focus",
+    abilitySlot: "hidden",
     changeGeneration: 7,
-    notes: 'Hidden ability was unobtainable in Gen 5-6',
+    notes: "Hidden ability was unobtainable in Gen 5-6",
   },
   {
     pokemonId: 245,
-    pokemonName: 'suicune',
-    oldAbility: 'water-absorb',
-    newAbility: 'inner-focus',
-    abilitySlot: 'hidden',
+    pokemonName: "suicune",
+    oldAbility: "water-absorb",
+    newAbility: "inner-focus",
+    abilitySlot: "hidden",
     changeGeneration: 7,
-    notes: 'Hidden ability was unobtainable in Gen 5-6',
+    notes: "Hidden ability was unobtainable in Gen 5-6",
   },
 
   // Generation VIII → IX Changes
   {
     pokemonId: 275,
-    pokemonName: 'shiftry',
-    oldAbility: 'early-bird',
-    newAbility: 'wind-rider',
-    abilitySlot: 'hidden',
+    pokemonName: "shiftry",
+    oldAbility: "early-bird",
+    newAbility: "wind-rider",
+    abilitySlot: "hidden",
     changeGeneration: 9,
-    notes: 'Major buff - Wind Rider provides immunity and Attack boost',
+    notes: "Major buff - Wind Rider provides immunity and Attack boost",
   },
   {
     pokemonId: 393,
-    pokemonName: 'piplup',
-    oldAbility: 'defiant',
-    newAbility: 'competitive',
-    abilitySlot: 'hidden',
+    pokemonName: "piplup",
+    oldAbility: "defiant",
+    newAbility: "competitive",
+    abilitySlot: "hidden",
     changeGeneration: 9,
-    notes: 'Changed to match special attacker role',
+    notes: "Changed to match special attacker role",
   },
   {
     pokemonId: 394,
-    pokemonName: 'prinplup',
-    oldAbility: 'defiant',
-    newAbility: 'competitive',
-    abilitySlot: 'hidden',
+    pokemonName: "prinplup",
+    oldAbility: "defiant",
+    newAbility: "competitive",
+    abilitySlot: "hidden",
     changeGeneration: 9,
-    notes: 'Changed to match special attacker role',
+    notes: "Changed to match special attacker role",
   },
   {
     pokemonId: 395,
-    pokemonName: 'empoleon',
-    oldAbility: 'defiant',
-    newAbility: 'competitive',
-    abilitySlot: 'hidden',
+    pokemonName: "empoleon",
+    oldAbility: "defiant",
+    newAbility: "competitive",
+    abilitySlot: "hidden",
     changeGeneration: 9,
-    notes: 'Major improvement - raises Sp.Atk instead of Attack',
+    notes: "Major improvement - raises Sp.Atk instead of Attack",
   },
 ];
 
@@ -190,9 +192,9 @@ export const POKEMON_ABILITY_CHANGES: AbilityChange[] = [
 export function getHistoricalAbilities(
   pokemonId: number,
   pokemonName: string,
-  generation: number
+  generation: number,
 ): AbilityChange[] {
-  return POKEMON_ABILITY_CHANGES.filter(change => {
+  return POKEMON_ABILITY_CHANGES.filter((change) => {
     // Check if this is the right Pokemon
     const matchesId = change.pokemonId === pokemonId;
     const matchesName = change.pokemonName === pokemonName;
@@ -219,13 +221,20 @@ export function applyHistoricalAbilityChanges(
   pokemonId: number,
   pokemonName: string,
   currentAbilities: Array<{ name: string; isHidden: boolean; slot: number }>,
-  generation: number
+  generation: number,
 ): Array<{ name: string; isHidden: boolean }> {
-  const historicalChanges = getHistoricalAbilities(pokemonId, pokemonName, generation);
+  const historicalChanges = getHistoricalAbilities(
+    pokemonId,
+    pokemonName,
+    generation,
+  );
 
   if (historicalChanges.length === 0) {
     // No changes for this Pokemon
-    return currentAbilities.map(a => ({ name: a.name, isHidden: a.isHidden }));
+    return currentAbilities.map((a) => ({
+      name: a.name,
+      isHidden: a.isHidden,
+    }));
   }
 
   // Create a map of abilities to replace
@@ -236,7 +245,7 @@ export function applyHistoricalAbilityChanges(
   }
 
   // Apply replacements
-  return currentAbilities.map(ability => {
+  return currentAbilities.map((ability) => {
     const oldAbility = replacements.get(ability.name);
     if (oldAbility) {
       // Replace with historical ability

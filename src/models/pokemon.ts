@@ -1,5 +1,10 @@
-import type { Pokemon, PokemonSpecies, PokemonStat, NamedAPIResource } from '../api/types.js';
-import { applyHistoricalAbilityChanges } from '../constants/abilityChanges.js';
+import type {
+  Pokemon,
+  PokemonSpecies,
+  PokemonStat,
+  NamedAPIResource,
+} from "../api/types.js";
+import { applyHistoricalAbilityChanges } from "../constants/abilityChanges.js";
 
 /**
  * Transformed Pokemon data for display
@@ -72,27 +77,34 @@ export interface PokemonDisplay {
 export function transformPokemon(
   pokemon: Pokemon,
   species?: PokemonSpecies,
-  filterGeneration?: number
+  filterGeneration?: number,
 ): PokemonDisplay {
   const stats = extractStats(pokemon.stats);
 
   // Extract types, filtering by generation if specified
-  const types = filterGeneration !== undefined
-    ? extractTypesByGeneration(pokemon, filterGeneration)
-    : pokemon.types.map(t => t.type.name);
+  const types =
+    filterGeneration !== undefined
+      ? extractTypesByGeneration(pokemon, filterGeneration)
+      : pokemon.types.map((t) => t.type.name);
 
   // Extract abilities, filtering by generation if specified
-  let abilitiesWithSlot = pokemon.abilities.filter(a => {
-    // Filter out hidden abilities before Gen 5 (only when filtering by generation)
-    if (filterGeneration !== undefined && filterGeneration < 5 && a.is_hidden) {
-      return false;
-    }
-    return true;
-  }).map(a => ({
-    name: a.ability.name,
-    isHidden: a.is_hidden,
-    slot: a.slot,
-  }));
+  let abilitiesWithSlot = pokemon.abilities
+    .filter((a) => {
+      // Filter out hidden abilities before Gen 5 (only when filtering by generation)
+      if (
+        filterGeneration !== undefined &&
+        filterGeneration < 5 &&
+        a.is_hidden
+      ) {
+        return false;
+      }
+      return true;
+    })
+    .map((a) => ({
+      name: a.ability.name,
+      isHidden: a.is_hidden,
+      slot: a.slot,
+    }));
 
   // Apply historical ability changes if filtering by generation
   let finalAbilities: Array<{ name: string; isHidden: boolean }>;
@@ -101,10 +113,10 @@ export function transformPokemon(
       pokemon.id,
       pokemon.name,
       abilitiesWithSlot,
-      filterGeneration
+      filterGeneration,
     );
   } else {
-    finalAbilities = abilitiesWithSlot.map(a => ({
+    finalAbilities = abilitiesWithSlot.map((a) => ({
       name: a.name,
       isHidden: a.isHidden,
     }));
@@ -123,12 +135,13 @@ export function transformPokemon(
     weight: pokemon.weight,
     sprite: pokemon.sprites.front_default,
     shinySprite: pokemon.sprites.front_shiny,
-    artworkSprite: pokemon.sprites.other?.['official-artwork']?.front_default || null,
+    artworkSprite:
+      pokemon.sprites.other?.["official-artwork"]?.front_default || null,
     isLegendary: species?.is_legendary || false,
     isMythical: species?.is_mythical || false,
     genus: extractGenus(species),
     flavorText: extractFlavorText(species),
-    evolutionChainUrl: species?.evolution_chain?.url || '',
+    evolutionChainUrl: species?.evolution_chain?.url || "",
   };
 }
 
@@ -143,10 +156,17 @@ export function transformPokemon(
  * @param filterGeneration - Generation to filter by
  * @returns Array of type names for the specified generation
  */
-function extractTypesByGeneration(pokemon: Pokemon, filterGeneration: number): string[] {
+function extractTypesByGeneration(
+  pokemon: Pokemon,
+  filterGeneration: number,
+): string[] {
   // If no past_types or viewing latest generation, use current types
-  if (!pokemon.past_types || pokemon.past_types.length === 0 || filterGeneration >= 9) {
-    return pokemon.types.map(t => t.type.name);
+  if (
+    !pokemon.past_types ||
+    pokemon.past_types.length === 0 ||
+    filterGeneration >= 9
+  ) {
+    return pokemon.types.map((t) => t.type.name);
   }
 
   // Look through past_types to find the types that existed in the target generation
@@ -159,13 +179,13 @@ function extractTypesByGeneration(pokemon: Pokemon, filterGeneration: number): s
     // If the change happened AFTER our target generation,
     // use the past types (i.e., types before the change)
     if (changeGeneration > filterGeneration) {
-      return pastType.types.map(t => t.type.name);
+      return pastType.types.map((t) => t.type.name);
     }
   }
 
   // If we got here, all changes happened before or at target generation
   // Use current types
-  return pokemon.types.map(t => t.type.name);
+  return pokemon.types.map((t) => t.type.name);
 }
 
 /**
@@ -184,16 +204,16 @@ function extractGenerationNumber(generationResource: NamedAPIResource): number {
  * Get generation number based on Pokemon ID
  */
 export function getGeneration(pokemonId: number): number {
-  if (pokemonId < 1 || pokemonId > 1025) return 1;  // Invalid IDs default to Gen 1
-  if (pokemonId <= 151) return 1;   // Kanto
-  if (pokemonId <= 251) return 2;   // Johto
-  if (pokemonId <= 386) return 3;   // Hoenn
-  if (pokemonId <= 493) return 4;   // Sinnoh
-  if (pokemonId <= 649) return 5;   // Unova
-  if (pokemonId <= 721) return 6;   // Kalos
-  if (pokemonId <= 809) return 7;   // Alola
-  if (pokemonId <= 905) return 8;   // Galar
-  return 9;                         // Paldea (906-1025)
+  if (pokemonId < 1 || pokemonId > 1025) return 1; // Invalid IDs default to Gen 1
+  if (pokemonId <= 151) return 1; // Kanto
+  if (pokemonId <= 251) return 2; // Johto
+  if (pokemonId <= 386) return 3; // Hoenn
+  if (pokemonId <= 493) return 4; // Sinnoh
+  if (pokemonId <= 649) return 5; // Unova
+  if (pokemonId <= 721) return 6; // Kalos
+  if (pokemonId <= 809) return 7; // Alola
+  if (pokemonId <= 905) return 8; // Galar
+  return 9; // Paldea (906-1025)
 }
 
 /**
@@ -201,17 +221,17 @@ export function getGeneration(pokemonId: number): number {
  */
 export function extractStats(stats: PokemonStat[]) {
   const statMap: Record<string, number> = {};
-  stats.forEach(s => {
+  stats.forEach((s) => {
     statMap[s.stat.name] = s.base_stat;
   });
 
   return {
-    hp: statMap['hp'] || 0,
-    attack: statMap['attack'] || 0,
-    defense: statMap['defense'] || 0,
-    specialAttack: statMap['special-attack'] || 0,
-    specialDefense: statMap['special-defense'] || 0,
-    speed: statMap['speed'] || 0,
+    hp: statMap["hp"] || 0,
+    attack: statMap["attack"] || 0,
+    defense: statMap["defense"] || 0,
+    specialAttack: statMap["special-attack"] || 0,
+    specialDefense: statMap["special-defense"] || 0,
+    speed: statMap["speed"] || 0,
   };
 }
 
@@ -220,17 +240,17 @@ export function extractStats(stats: PokemonStat[]) {
  */
 export function extractEVYield(stats: PokemonStat[]) {
   const evMap: Record<string, number> = {};
-  stats.forEach(s => {
+  stats.forEach((s) => {
     evMap[s.stat.name] = s.effort;
   });
 
   return {
-    hp: evMap['hp'] || 0,
-    attack: evMap['attack'] || 0,
-    defense: evMap['defense'] || 0,
-    specialAttack: evMap['special-attack'] || 0,
-    specialDefense: evMap['special-defense'] || 0,
-    speed: evMap['speed'] || 0,
+    hp: evMap["hp"] || 0,
+    attack: evMap["attack"] || 0,
+    defense: evMap["defense"] || 0,
+    specialAttack: evMap["special-attack"] || 0,
+    specialDefense: evMap["special-defense"] || 0,
+    speed: evMap["speed"] || 0,
   };
 }
 
@@ -239,37 +259,45 @@ export function extractEVYield(stats: PokemonStat[]) {
  */
 function extractGenus(species?: PokemonSpecies): string {
   if (!species || !species.genera) {
-    return '';
+    return "";
   }
 
   const englishGenus = (species.genera as any[]).find(
-    g => g.language.name === 'en'
+    (g) => g.language.name === "en",
   );
-  return englishGenus?.genus || '';
+  return englishGenus?.genus || "";
 }
 
 /**
  * Extract English flavor text from species data
  */
 function extractFlavorText(species?: PokemonSpecies): string {
-  if (!species || !species.flavor_text_entries || species.flavor_text_entries.length === 0) {
-    return 'No description available.';
+  if (
+    !species ||
+    !species.flavor_text_entries ||
+    species.flavor_text_entries.length === 0
+  ) {
+    return "No description available.";
   }
 
   // Find English flavor text, preferably from recent games
   const englishEntries = species.flavor_text_entries.filter(
-    entry => entry.language.name === 'en'
+    (entry) => entry.language.name === "en",
   );
 
   if (englishEntries.length === 0) {
-    return 'No description available.';
+    return "No description available.";
   }
 
   // Get the most recent entry
   const text = englishEntries[englishEntries.length - 1].flavor_text;
 
   // Clean up the text (remove form feeds, newlines, etc.)
-  return text.replace(/\f/g, ' ').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+  return text
+    .replace(/\f/g, " ")
+    .replace(/\n/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
@@ -277,9 +305,9 @@ function extractFlavorText(species?: PokemonSpecies): string {
  */
 export function capitalizeName(name: string): string {
   return name
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 /**

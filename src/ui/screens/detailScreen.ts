@@ -1,17 +1,21 @@
-import blessed from 'blessed';
-import { getTypeColor, colors } from '../theme.js';
-import { pokemonRepository } from '../../repositories/PokemonRepository.js';
-import { imageService } from '../../services/imageService.js';
-import { generationService } from '../../services/generationService.js';
-import type { PokemonDisplay } from '../../models/pokemon.js';
-import type { IDetailSection } from '../components/sections/IDetailSection.js';
-import { SpriteSection } from '../components/sections/SpriteSection.js';
-import { StatsSection } from '../components/sections/StatsSection.js';
-import { OverviewSection } from '../components/sections/OverviewSection.js';
-import { MovesSection } from '../components/sections/MovesSection.js';
-import { TabbedPanel } from '../components/TabbedPanel.js';
-import { LoadingModal } from '../components/LoadingModal.js';
-import type { LoadingPhase, LoadingStatus, LoadingPhaseInfo } from '../types/loadingTypes.js';
+import blessed from "blessed";
+import { getTypeColor, colors } from "../theme.js";
+import { pokemonRepository } from "../../repositories/PokemonRepository.js";
+import { imageService } from "../../services/imageService.js";
+import { generationService } from "../../services/generationService.js";
+import type { PokemonDisplay } from "../../models/pokemon.js";
+import type { IDetailSection } from "../components/sections/IDetailSection.js";
+import { SpriteSection } from "../components/sections/SpriteSection.js";
+import { StatsSection } from "../components/sections/StatsSection.js";
+import { OverviewSection } from "../components/sections/OverviewSection.js";
+import { MovesSection } from "../components/sections/MovesSection.js";
+import { TabbedPanel } from "../components/TabbedPanel.js";
+import { LoadingModal } from "../components/LoadingModal.js";
+import type {
+  LoadingPhase,
+  LoadingStatus,
+  LoadingPhaseInfo,
+} from "../types/loadingTypes.js";
 
 export interface DetailScreenOptions {
   parent: blessed.Widgets.Node;
@@ -55,12 +59,12 @@ export class DetailScreen {
       parent: options.parent,
       top: 0,
       left: 0,
-      width: '100%',
-      height: '100%',
+      width: "100%",
+      height: "100%",
       hidden: true,
       tags: true,
       style: {
-        bg: 'transparent',
+        bg: "transparent",
       },
     });
 
@@ -82,14 +86,14 @@ export class DetailScreen {
       parent: this.container,
       top: 0,
       left: 0,
-      width: '100%',
+      width: "100%",
       height: 3,
       tags: true,
       style: {
         bg: colors.navyBlue,
       },
       border: {
-        type: 'line',
+        type: "line",
       },
     });
 
@@ -101,10 +105,10 @@ export class DetailScreen {
       parent: this.container,
       top: 3,
       left: 0,
-      width: '50%',
-      height: '100%-3',
+      width: "50%",
+      height: "100%-3",
       style: {
-        bg: 'transparent',
+        bg: "transparent",
       },
     });
 
@@ -112,11 +116,11 @@ export class DetailScreen {
     const rightColumn = blessed.box({
       parent: this.container,
       top: 3,
-      left: '50%',
-      width: '50%',
-      height: '100%-3',
+      left: "50%",
+      width: "50%",
+      height: "100%-3",
       style: {
-        bg: 'transparent',
+        bg: "transparent",
       },
     });
 
@@ -125,10 +129,10 @@ export class DetailScreen {
       parent: leftColumn,
       top: 0,
       left: 0,
-      width: '100%',
+      width: "100%",
       height: 1,
       tags: true,
-      content: '{center}{bold}Picture{/bold}{/center}',
+      content: "{center}{bold}Picture{/bold}{/center}",
       style: {
         bg: colors.navyBlue,
       },
@@ -141,8 +145,8 @@ export class DetailScreen {
     this.tabbedPanel = new TabbedPanel(rightColumn, this.screen, {
       top: 0,
       left: 0,
-      width: '100%',
-      height: '100%',
+      width: "100%",
+      height: "100%",
     });
 
     // Create sections for tabs
@@ -158,9 +162,9 @@ export class DetailScreen {
     movesSection.setStatusCallback(statusCallback);
 
     // Add tabs (1-3 shortcuts) - Evolution is now part of Overview
-    this.tabbedPanel.addTab(this.overviewSection, 'Overview', '1');
-    this.tabbedPanel.addTab(statsSection, 'Stats', '2');
-    this.tabbedPanel.addTab(movesSection, 'Moves', '3');
+    this.tabbedPanel.addTab(this.overviewSection, "Overview", "1");
+    this.tabbedPanel.addTab(statsSection, "Stats", "2");
+    this.tabbedPanel.addTab(movesSection, "Moves", "3");
 
     // Only track sprite section (tabs are managed by TabbedPanel)
     this.sections = [this.spriteSection];
@@ -170,19 +174,19 @@ export class DetailScreen {
    * Setup keyboard shortcuts
    */
   private setupHotkeys(): void {
-    this.screen.key(['escape', 'b'], () => {
+    this.screen.key(["escape", "b"], () => {
       if (this.isVisible() && this.onBackCallback) {
         this.onBackCallback();
       }
     });
 
-    this.screen.key(['e'], () => {
+    this.screen.key(["e"], () => {
       if (this.isVisible()) {
         this.navigateToEvolution();
       }
     });
 
-    this.screen.key(['c'], async () => {
+    this.screen.key(["c"], async () => {
       if (this.isVisible() && this.currentPokemon) {
         // Cycle to next color space
         imageService.cycleColorSpace();
@@ -200,7 +204,7 @@ export class DetailScreen {
       }
     });
 
-    this.screen.key(['p'], async () => {
+    this.screen.key(["p"], async () => {
       if (this.isVisible() && this.currentPokemon) {
         // Cycle to next color mode (palette)
         imageService.cycleColorMode();
@@ -218,7 +222,7 @@ export class DetailScreen {
       }
     });
 
-    this.screen.key(['d'], async () => {
+    this.screen.key(["d"], async () => {
       if (this.isVisible() && this.currentPokemon) {
         // Cycle to next dither mode
         imageService.cycleDitherMode();
@@ -236,7 +240,7 @@ export class DetailScreen {
       }
     });
 
-    this.screen.key(['s'], async () => {
+    this.screen.key(["s"], async () => {
       if (this.isVisible() && this.currentPokemon) {
         // Cycle to next symbol set
         imageService.cycleSymbolSet();
@@ -269,9 +273,9 @@ export class DetailScreen {
 
     try {
       // Phase 1: Load Pokemon data
-      this.updateLoadingStatus('pokemon', 'loading');
+      this.updateLoadingStatus("pokemon", "loading");
       const pokemon = await pokemonRepository.getPokemonDetails(name);
-      this.updateLoadingStatus('pokemon', 'complete');
+      this.updateLoadingStatus("pokemon", "complete");
 
       // Ignore stale results if a newer operation has started
       if (loadId !== this.currentLoadId) {
@@ -318,7 +322,7 @@ export class DetailScreen {
   private async updateAllSections(pokemon: PokemonDisplay): Promise<void> {
     // Update sprite section and all tabs in parallel
     await Promise.all([
-      ...this.sections.map(section => section.update(pokemon)),
+      ...this.sections.map((section) => section.update(pokemon)),
       this.tabbedPanel.updateAll(pokemon),
     ]);
   }
@@ -328,15 +332,15 @@ export class DetailScreen {
    */
   private displayHeader(pokemon: PokemonDisplay): void {
     const types = pokemon.types
-      .map(t => `{${getTypeColor(t)}-fg}${t.toUpperCase()}{/}`)
-      .join(' ');
+      .map((t) => `{${getTypeColor(t)}-fg}${t.toUpperCase()}{/}`)
+      .join(" ");
 
     // Calculate effective generation (max of session gen and Pokemon's release gen)
     const sessionGeneration = generationService.getSessionGeneration();
     const effectiveGeneration = Math.max(sessionGeneration, pokemon.generation);
 
     const name = `{${colors.pokemonYellow}-fg}{bold}${pokemon.displayName}{/bold}{/}`;
-    const id = `{gray-fg}#${pokemon.id.toString().padStart(4, '0')}{/}`;
+    const id = `{gray-fg}#${pokemon.id.toString().padStart(4, "0")}{/}`;
     const gen = `{cyan-fg}(gen ${effectiveGeneration}){/}`;
     const content = `{center}${name} ${id} ${gen} ${types}{/center}`;
 
@@ -356,7 +360,7 @@ export class DetailScreen {
 
     // Filter out current Pokemon
     const options = evolutionOptions.filter(
-      name => name !== this.currentPokemon?.name
+      (name) => name !== this.currentPokemon?.name,
     );
 
     if (options.length === 0) {
@@ -379,17 +383,17 @@ export class DetailScreen {
   private showEvolutionMenu(options: string[]): void {
     const menu = blessed.list({
       parent: this.screen,
-      top: 'center',
-      left: 'center',
+      top: "center",
+      left: "center",
       width: 40,
       height: options.length + 4,
       keys: true,
       vi: false,
       mouse: true,
       tags: true,
-      label: ' Select Evolution ',
+      label: " Select Evolution ",
       border: {
-        type: 'line',
+        type: "line",
       },
       style: {
         border: {
@@ -397,14 +401,16 @@ export class DetailScreen {
         },
         selected: {
           bg: colors.pokemonYellow,
-          fg: 'black',
+          fg: "black",
         },
       },
     });
 
-    menu.setItems(options.map(name => name.charAt(0).toUpperCase() + name.slice(1)));
+    menu.setItems(
+      options.map((name) => name.charAt(0).toUpperCase() + name.slice(1)),
+    );
 
-    menu.on('select', async (item) => {
+    menu.on("select", async (item) => {
       const selectedName = item.getText().toLowerCase();
       menu.detach();
       this.screen.render();
@@ -414,7 +420,7 @@ export class DetailScreen {
       }
     });
 
-    menu.key(['escape'], () => {
+    menu.key(["escape"], () => {
       menu.detach();
       this.screen.render();
     });
@@ -439,11 +445,11 @@ export class DetailScreen {
   private showLoading(pokemonName: string): void {
     // Initialize loading phases with all pending
     const phases: LoadingPhaseInfo[] = [
-      { phase: 'pokemon', label: 'Pokemon data', status: 'pending' },
-      { phase: 'sprite', label: 'Sprite', status: 'pending' },
-      { phase: 'evolution', label: 'Evolution chain', status: 'pending' },
-      { phase: 'abilities', label: 'Abilities', status: 'pending' },
-      { phase: 'moves', label: 'Moves', status: 'pending' },
+      { phase: "pokemon", label: "Pokemon data", status: "pending" },
+      { phase: "sprite", label: "Sprite", status: "pending" },
+      { phase: "evolution", label: "Evolution chain", status: "pending" },
+      { phase: "abilities", label: "Abilities", status: "pending" },
+      { phase: "moves", label: "Moves", status: "pending" },
     ];
 
     // Create and show loading modal
@@ -454,7 +460,10 @@ export class DetailScreen {
   /**
    * Update loading status for a specific phase
    */
-  private updateLoadingStatus(phase: LoadingPhase, status: LoadingStatus): void {
+  private updateLoadingStatus(
+    phase: LoadingPhase,
+    status: LoadingStatus,
+  ): void {
     this.loadingModal?.updatePhase(phase, status);
   }
 
@@ -493,7 +502,7 @@ export class DetailScreen {
    * Clean up resources
    */
   destroy(): void {
-    this.sections.forEach(section => section.destroy());
+    this.sections.forEach((section) => section.destroy());
     this.tabbedPanel.destroy();
     this.container.destroy();
   }

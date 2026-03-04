@@ -30,7 +30,9 @@ export class GenerationService {
    */
   setSessionGeneration(generation: number): void {
     if (generation < 1 || generation > 9) {
-      throw new Error(`Invalid generation: ${generation}. Must be between 1 and 9.`);
+      throw new Error(
+        `Invalid generation: ${generation}. Must be between 1 and 9.`,
+      );
     }
     this.sessionGeneration = generation;
   }

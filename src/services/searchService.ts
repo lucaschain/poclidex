@@ -1,5 +1,5 @@
-import fuzzysort from 'fuzzysort';
-import type { PokemonListItem } from '../api/types.js';
+import fuzzysort from "fuzzysort";
+import type { PokemonListItem } from "../api/types.js";
 
 export interface SearchResult {
   name: string;
@@ -20,14 +20,14 @@ export class SearchService {
   indexPokemon(pokemonList: PokemonListItem[]): void {
     this.pokemonList = pokemonList;
     // Prepare all Pokemon names for faster fuzzy search
-    this.preparedSearch = pokemonList.map(p => fuzzysort.prepare(p.name));
+    this.preparedSearch = pokemonList.map((p) => fuzzysort.prepare(p.name));
   }
 
   /**
    * Search for Pokemon with fuzzy matching
    */
   search(query: string, limit: number = 10): SearchResult[] {
-    if (!query || query.trim() === '') {
+    if (!query || query.trim() === "") {
       return [];
     }
 
@@ -36,7 +36,7 @@ export class SearchService {
       threshold: -10000, // Don't filter out any results, just sort by score
     });
 
-    return results.map(result => ({
+    return results.map((result) => ({
       name: result.target,
       score: result.score,
       highlight: this.highlightMatches(result),
@@ -48,7 +48,7 @@ export class SearchService {
    */
   autocomplete(query: string, limit: number = 10): string[] {
     const results = this.search(query, limit);
-    return results.map(r => r.name);
+    return results.map((r) => r.name);
   }
 
   /**
@@ -59,10 +59,10 @@ export class SearchService {
       return result.target;
     }
 
-    let highlighted = '';
+    let highlighted = "";
     let lastIndex = 0;
 
-    result.indexes.forEach(index => {
+    result.indexes.forEach((index) => {
       // Add non-matched characters
       highlighted += result.target.substring(lastIndex, index);
       // Add matched character with marker
@@ -91,7 +91,9 @@ export class SearchService {
    * Get Pokemon by exact name
    */
   getByName(name: string): PokemonListItem | undefined {
-    return this.pokemonList.find(p => p.name.toLowerCase() === name.toLowerCase());
+    return this.pokemonList.find(
+      (p) => p.name.toLowerCase() === name.toLowerCase(),
+    );
   }
 
   /**

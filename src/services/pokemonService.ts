@@ -1,15 +1,19 @@
-import { pokeAPI } from '../api/pokeapi.js';
-import { LRUCache } from '../utils/cache.js';
-import { transformPokemon, type PokemonDisplay } from '../models/pokemon.js';
-import type { PokemonListItem, EvolutionChain, ChainLink } from '../api/types.js';
+import { pokeAPI } from "../api/pokeapi.js";
+import { LRUCache } from "../utils/cache.js";
+import { transformPokemon, type PokemonDisplay } from "../models/pokemon.js";
+import type {
+  PokemonListItem,
+  EvolutionChain,
+  ChainLink,
+} from "../api/types.js";
 
 /**
  * Evolution stage with species and method information
  */
 export interface EvolutionStage {
   species: string;
-  method: string;  // How to evolve into this Pokemon
-  branches: EvolutionStage[];  // Multiple evolution paths
+  method: string; // How to evolve into this Pokemon
+  branches: EvolutionStage[]; // Multiple evolution paths
 }
 
 /**
@@ -62,7 +66,8 @@ export class PokemonService {
    */
   async getPokemonDetails(nameOrId: string | number): Promise<PokemonDisplay> {
     // Check cache first
-    const cacheKey = typeof nameOrId === 'string' ? nameOrId.toLowerCase() : nameOrId;
+    const cacheKey =
+      typeof nameOrId === "string" ? nameOrId.toLowerCase() : nameOrId;
     const cached = this.pokemonCache.get(cacheKey);
     if (cached) {
       return cached;
@@ -122,7 +127,7 @@ export class PokemonService {
       stages[depth].push(link.species.name);
 
       if (link.evolves_to && link.evolves_to.length > 0) {
-        link.evolves_to.forEach(evolution => {
+        link.evolves_to.forEach((evolution) => {
           traverse(evolution, depth + 1);
         });
       }
@@ -140,7 +145,7 @@ export class PokemonService {
       return {
         species: link.species.name,
         method: this.getEvolutionTrigger(link),
-        branches: link.evolves_to.map(evo => buildStage(evo)),
+        branches: link.evolves_to.map((evo) => buildStage(evo)),
       };
     };
 
@@ -152,7 +157,7 @@ export class PokemonService {
    */
   getEvolutionTrigger(link: ChainLink): string {
     if (!link.evolution_details || link.evolution_details.length === 0) {
-      return '';
+      return "";
     }
 
     const detail = link.evolution_details[0];
@@ -165,23 +170,25 @@ export class PokemonService {
 
     // Evolution item (stones, etc.)
     if (detail.item) {
-      const itemName = detail.item.name.split('-').map(w =>
-        w.charAt(0).toUpperCase() + w.slice(1)
-      ).join(' ');
+      const itemName = detail.item.name
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
       parts.push(itemName);
     }
 
     // Trade evolution
-    if (detail.trigger.name === 'trade') {
+    if (detail.trigger.name === "trade") {
       if (detail.held_item) {
-        const heldName = detail.held_item.name.split('-').map(w =>
-          w.charAt(0).toUpperCase() + w.slice(1)
-        ).join(' ');
+        const heldName = detail.held_item.name
+          .split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
         parts.push(`Trade holding ${heldName}`);
       } else if (detail.trade_species) {
         parts.push(`Trade for ${detail.trade_species.name}`);
       } else {
-        parts.push('Trade');
+        parts.push("Trade");
       }
     }
 
@@ -197,14 +204,17 @@ export class PokemonService {
 
     // Time of day
     if (detail.time_of_day) {
-      parts.push(`(${detail.time_of_day.charAt(0).toUpperCase() + detail.time_of_day.slice(1)})`);
+      parts.push(
+        `(${detail.time_of_day.charAt(0).toUpperCase() + detail.time_of_day.slice(1)})`,
+      );
     }
 
     // Known move
     if (detail.known_move) {
-      const moveName = detail.known_move.name.split('-').map(w =>
-        w.charAt(0).toUpperCase() + w.slice(1)
-      ).join(' ');
+      const moveName = detail.known_move.name
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
       parts.push(`knows ${moveName}`);
     }
 
@@ -215,27 +225,28 @@ export class PokemonService {
 
     // Location
     if (detail.location) {
-      const locName = detail.location.name.split('-').map(w =>
-        w.charAt(0).toUpperCase() + w.slice(1)
-      ).join(' ');
+      const locName = detail.location.name
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
       parts.push(`at ${locName}`);
     }
 
     // Gender requirement
     if (detail.gender === 1) {
-      parts.push('(Female)');
+      parts.push("(Female)");
     } else if (detail.gender === 2) {
-      parts.push('(Male)');
+      parts.push("(Male)");
     }
 
     // Stats comparison (Tyrogue)
     if (detail.relative_physical_stats !== null) {
       if (detail.relative_physical_stats === 1) {
-        parts.push('(ATK > DEF)');
+        parts.push("(ATK > DEF)");
       } else if (detail.relative_physical_stats === -1) {
-        parts.push('(ATK < DEF)');
+        parts.push("(ATK < DEF)");
       } else {
-        parts.push('(ATK = DEF)');
+        parts.push("(ATK = DEF)");
       }
     }
 
@@ -250,7 +261,7 @@ export class PokemonService {
 
     // Weather
     if (detail.needs_overworld_rain) {
-      parts.push('while raining');
+      parts.push("while raining");
     }
 
     // Beauty (Gen 3)
@@ -260,10 +271,10 @@ export class PokemonService {
 
     // 3DS specific
     if (detail.turn_upside_down) {
-      parts.push('turn upside down');
+      parts.push("turn upside down");
     }
 
-    return parts.length > 0 ? parts.join(' ') : detail.trigger.name;
+    return parts.length > 0 ? parts.join(" ") : detail.trigger.name;
   }
 
   /**

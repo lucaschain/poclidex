@@ -1,5 +1,5 @@
-import blessed from 'blessed';
-import { theme } from '../theme.js';
+import blessed from "blessed";
+import { theme } from "../theme.js";
 
 export interface SearchBoxOptions {
   parent: blessed.Widgets.Node;
@@ -34,7 +34,7 @@ export class SearchBox {
       parent: options.parent,
       top: options.top ?? 0,
       left: options.left ?? 0,
-      width: options.width ?? '100%',
+      width: options.width ?? "100%",
       height: 3,
     });
 
@@ -43,13 +43,13 @@ export class SearchBox {
       parent: this.container,
       top: 0,
       left: 0,
-      width: '100%',
+      width: "100%",
       height: 3,
       keys: false,
       mouse: true,
       inputOnFocus: false,
-      label: ' Filter Pokemon (Ctrl+S) ',
-      content: '',
+      label: " Filter Pokemon (Ctrl+S) ",
+      content: "",
       style: {
         fg: theme.searchBox.fg,
         bg: theme.searchBox.bg,
@@ -61,7 +61,7 @@ export class SearchBox {
         },
       },
       border: {
-        type: 'line',
+        type: "line",
       },
     });
 
@@ -70,14 +70,14 @@ export class SearchBox {
 
   private setupEventHandlers(): void {
     // Manually handle all key input since keys: false and inputOnFocus: false
-    this.input.on('keypress', (ch, key) => {
+    this.input.on("keypress", (ch, key) => {
       // Only process keypresses if the input is visible and focused
       if (this.input.hidden || this.input.screen.focused !== this.input) {
         return;
       }
 
       // Navigation keys
-      if (key.name === 'tab' && !key.shift) {
+      if (key.name === "tab" && !key.shift) {
         if (this.onNavigateDownCallback) {
           this.onNavigateDownCallback();
           this.screen.render();
@@ -85,7 +85,7 @@ export class SearchBox {
         return;
       }
 
-      if (key.name === 'tab' && key.shift) {
+      if (key.name === "tab" && key.shift) {
         if (this.onNavigateUpCallback) {
           this.onNavigateUpCallback();
           this.screen.render();
@@ -93,7 +93,7 @@ export class SearchBox {
         return;
       }
 
-      if (key.name === 'down') {
+      if (key.name === "down") {
         if (this.onNavigateDownCallback) {
           this.onNavigateDownCallback();
           this.screen.render();
@@ -101,7 +101,7 @@ export class SearchBox {
         return;
       }
 
-      if (key.name === 'up') {
+      if (key.name === "up") {
         if (this.onNavigateUpCallback) {
           this.onNavigateUpCallback();
           this.screen.render();
@@ -109,7 +109,7 @@ export class SearchBox {
         return;
       }
 
-      if (key.name === 'enter') {
+      if (key.name === "enter") {
         if (this.onSubmitCallback) {
           this.onSubmitCallback();
         }
@@ -117,15 +117,15 @@ export class SearchBox {
       }
 
       // Ctrl+W - clear search
-      if (key.name === 'w' && key.ctrl) {
-        this.input.setValue('');
+      if (key.name === "w" && key.ctrl) {
+        this.input.setValue("");
         this.screen.render();
         this.triggerSearch();
         return;
       }
 
       // Backspace - delete last character
-      if (key.name === 'backspace') {
+      if (key.name === "backspace") {
         const current = this.input.getValue();
         this.input.setValue(current.slice(0, -1));
         this.screen.render();
@@ -173,7 +173,7 @@ export class SearchBox {
    * Clear the search input and trigger search (shows all Pokemon)
    */
   clear(): void {
-    this.input.setValue('');
+    this.input.setValue("");
     this.screen.render();
     this.triggerSearch();
   }

@@ -1,7 +1,7 @@
-import blessed from 'blessed';
-import { theme } from '../theme.js';
-import type { PokemonListItem } from '../../api/types.js';
-import { capitalizeName } from '../../models/pokemon.js';
+import blessed from "blessed";
+import { theme } from "../theme.js";
+import type { PokemonListItem } from "../../api/types.js";
+import { capitalizeName } from "../../models/pokemon.js";
 
 export interface PokemonListOptions {
   parent: blessed.Widgets.Node;
@@ -25,15 +25,15 @@ export class PokemonList {
       parent: options.parent,
       top: options.top ?? 0,
       left: options.left ?? 0,
-      width: options.width ?? '100%',
-      height: options.height ?? '100%',
+      width: options.width ?? "100%",
+      height: options.height ?? "100%",
       keys: true,
       mouse: true,
       tags: true,
       scrollbar: {
-        ch: ' ',
+        ch: " ",
         style: {
-          bg: 'yellow',
+          bg: "yellow",
         },
       },
       style: {
@@ -43,16 +43,16 @@ export class PokemonList {
         selected: theme.list.selected,
       },
       border: {
-        type: 'line',
+        type: "line",
       },
-      label: ' Pokemon List ',
+      label: " Pokemon List ",
     });
 
     this.setupEventHandlers();
   }
 
   private setupEventHandlers(): void {
-    this.list.on('select', () => {
+    this.list.on("select", () => {
       const index = (this.list as any).selected;
       if (this.onSelectCallback && this.filteredData[index]) {
         this.onSelectCallback(this.filteredData[index]);
@@ -60,22 +60,22 @@ export class PokemonList {
     });
 
     // Add vim-style navigation
-    this.list.key(['j'], () => {
+    this.list.key(["j"], () => {
       this.list.down(1);
       this.list.screen.render();
     });
 
-    this.list.key(['k'], () => {
+    this.list.key(["k"], () => {
       this.list.up(1);
       this.list.screen.render();
     });
 
-    this.list.key(['g'], () => {
+    this.list.key(["g"], () => {
       this.list.select(0);
       this.list.screen.render();
     });
 
-    this.list.key(['G'], () => {
+    this.list.key(["G"], () => {
       this.list.select(this.filteredData.length - 1);
       this.list.screen.render();
     });
@@ -97,9 +97,9 @@ export class PokemonList {
     if (pokemonNames.length === 0) {
       this.filteredData = this.pokemonData;
     } else {
-      const nameSet = new Set(pokemonNames.map(n => n.toLowerCase()));
-      this.filteredData = this.pokemonData.filter(p =>
-        nameSet.has(p.name.toLowerCase())
+      const nameSet = new Set(pokemonNames.map((n) => n.toLowerCase()));
+      this.filteredData = this.pokemonData.filter((p) =>
+        nameSet.has(p.name.toLowerCase()),
       );
     }
     this.renderList();
@@ -112,7 +112,7 @@ export class PokemonList {
     const items = this.filteredData.map((pokemon) => {
       const id = this.extractId(pokemon.url);
       const displayName = capitalizeName(pokemon.name);
-      return `{bold}#${id.toString().padStart(4, '0')}{/bold} ${displayName}`;
+      return `{bold}#${id.toString().padStart(4, "0")}{/bold} ${displayName}`;
     });
 
     this.list.setItems(items);
@@ -141,7 +141,7 @@ export class PokemonList {
    */
   selectByName(name: string): void {
     const index = this.filteredData.findIndex(
-      p => p.name.toLowerCase() === name.toLowerCase()
+      (p) => p.name.toLowerCase() === name.toLowerCase(),
     );
 
     if (index !== -1) {

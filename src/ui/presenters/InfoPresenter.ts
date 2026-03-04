@@ -1,6 +1,6 @@
-import { colors, getTypeColor } from '../theme.js';
-import type { PokemonDisplay } from '../../models/pokemon.js';
-import { formatHeight, formatWeight } from '../../models/pokemon.js';
+import { colors, getTypeColor } from "../theme.js";
+import type { PokemonDisplay } from "../../models/pokemon.js";
+import { formatHeight, formatWeight } from "../../models/pokemon.js";
 
 /**
  * Presenter for rendering Pokemon information
@@ -16,22 +16,22 @@ export class InfoPresenter {
 
     // Physical info
     lines.push(...this.renderPhysical(pokemon));
-    lines.push('');
+    lines.push("");
 
     // Types
     lines.push(...this.renderTypes(pokemon));
-    lines.push('');
+    lines.push("");
 
     // Special status (Legendary/Mythical)
     if (pokemon.isLegendary || pokemon.isMythical) {
       lines.push(...this.renderStatus(pokemon));
-      lines.push('');
+      lines.push("");
     }
 
     // Genus
     if (pokemon.genus) {
       lines.push(...this.renderGenus(pokemon));
-      lines.push('');
+      lines.push("");
     }
 
     // Flavor text
@@ -59,7 +59,7 @@ export class InfoPresenter {
   private renderTypes(pokemon: PokemonDisplay): string[] {
     const lines = [`{${colors.pokemonYellow}-fg}{bold}Type{/bold}{/}`];
 
-    pokemon.types.forEach(type => {
+    pokemon.types.forEach((type) => {
       lines.push(`{${getTypeColor(type)}-fg}${type.toUpperCase()}{/}`);
     });
 
@@ -73,10 +73,10 @@ export class InfoPresenter {
     const lines = [`{${colors.pokemonYellow}-fg}{bold}Status{/bold}{/}`];
 
     if (pokemon.isLegendary) {
-      lines.push('{red-fg}★ Legendary{/}');
+      lines.push("{red-fg}★ Legendary{/}");
     }
     if (pokemon.isMythical) {
-      lines.push('{magenta-fg}✦ Mythical{/}');
+      lines.push("{magenta-fg}✦ Mythical{/}");
     }
 
     return lines;
@@ -106,8 +106,11 @@ export class InfoPresenter {
    * Get a summary line (for list views)
    */
   renderSummary(pokemon: PokemonDisplay): string {
-    const types = pokemon.types.map(t => t.toUpperCase()).join('/');
-    const total = Object.values(pokemon.stats).reduce((sum, val) => sum + val, 0);
+    const types = pokemon.types.map((t) => t.toUpperCase()).join("/");
+    const total = Object.values(pokemon.stats).reduce(
+      (sum, val) => sum + val,
+      0,
+    );
     return `${types} | BST: ${total} | ${formatHeight(pokemon.height)} | ${formatWeight(pokemon.weight)}`;
   }
 }

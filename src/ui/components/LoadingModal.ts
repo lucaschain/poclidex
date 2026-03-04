@@ -1,5 +1,9 @@
-import blessed from 'blessed';
-import type { LoadingPhase, LoadingStatus, LoadingPhaseInfo } from '../types/loadingTypes.js';
+import blessed from "blessed";
+import type {
+  LoadingPhase,
+  LoadingStatus,
+  LoadingPhaseInfo,
+} from "../types/loadingTypes.js";
 
 /**
  * Reusable loading modal component that displays progress across multiple phases
@@ -17,9 +21,24 @@ export class LoadingModal {
   private pokemonName: string;
   private spinnerInterval?: NodeJS.Timeout;
   private spinnerFrame = 0;
-  private readonly spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  private readonly spinnerFrames = [
+    "⠋",
+    "⠙",
+    "⠹",
+    "⠸",
+    "⠼",
+    "⠴",
+    "⠦",
+    "⠧",
+    "⠇",
+    "⠏",
+  ];
 
-  constructor(screen: blessed.Widgets.Screen, pokemonName: string, phases: LoadingPhaseInfo[]) {
+  constructor(
+    screen: blessed.Widgets.Screen,
+    pokemonName: string,
+    phases: LoadingPhaseInfo[],
+  ) {
     this.screen = screen;
     this.pokemonName = pokemonName;
     this.phases = phases;
@@ -32,13 +51,14 @@ export class LoadingModal {
     // Destroy existing modal if present
     this.hide();
 
-    const displayName = this.pokemonName.charAt(0).toUpperCase() + this.pokemonName.slice(1);
+    const displayName =
+      this.pokemonName.charAt(0).toUpperCase() + this.pokemonName.slice(1);
 
     // Create centered loading box overlay
     this.loadingBox = blessed.box({
       parent: this.screen,
-      top: 'center',
-      left: 'center',
+      top: "center",
+      left: "center",
       width: 28,
       height: 9, // 5 phases + padding
       tags: true,
@@ -50,11 +70,11 @@ export class LoadingModal {
         bottom: 1,
       },
       border: {
-        type: 'line',
+        type: "line",
       },
       style: {
         border: {
-          fg: 'yellow',
+          fg: "yellow",
         },
       },
     });
@@ -74,7 +94,7 @@ export class LoadingModal {
    * Update the status of a specific phase
    */
   updatePhase(phase: LoadingPhase, status: LoadingStatus): void {
-    const phaseInfo = this.phases.find(p => p.phase === phase);
+    const phaseInfo = this.phases.find((p) => p.phase === phase);
     if (phaseInfo) {
       phaseInfo.status = status;
       this.render();
@@ -114,9 +134,12 @@ export class LoadingModal {
 
     const getStatusSymbol = (status: LoadingStatus): string => {
       switch (status) {
-        case 'pending': return '{gray-fg}○{/}';
-        case 'loading': return `{yellow-fg}${this.spinnerFrames[this.spinnerFrame]}{/}`;
-        case 'complete': return '{green-fg}✓{/}';
+        case "pending":
+          return "{gray-fg}○{/}";
+        case "loading":
+          return `{yellow-fg}${this.spinnerFrames[this.spinnerFrame]}{/}`;
+        case "complete":
+          return "{green-fg}✓{/}";
       }
     };
 
@@ -128,7 +151,7 @@ export class LoadingModal {
       lines.push(`${symbol} ${phaseInfo.label}`);
     }
 
-    this.loadingBox.setContent(lines.join('\n'));
+    this.loadingBox.setContent(lines.join("\n"));
     this.screen.render();
   }
 

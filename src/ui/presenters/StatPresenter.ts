@@ -1,9 +1,9 @@
-import type blessed from 'blessed';
-import { theme, colors } from '../theme.js';
-import type { PokemonDisplay } from '../../models/pokemon.js';
-import { pokemonRepository } from '../../repositories/PokemonRepository.js';
-import { generationService } from '../../services/generationService.js';
-import { GEN1_SPECIAL_STATS } from '../../constants/gen1Stats.js';
+import type blessed from "blessed";
+import { theme, colors } from "../theme.js";
+import type { PokemonDisplay } from "../../models/pokemon.js";
+import { pokemonRepository } from "../../repositories/PokemonRepository.js";
+import { generationService } from "../../services/generationService.js";
+import { GEN1_SPECIAL_STATS } from "../../constants/gen1Stats.js";
 
 /**
  * Presenter for rendering Pokemon stats
@@ -26,7 +26,7 @@ export class StatPresenter {
     // @ts-ignore - blessed types don't fully expose width property
     const totalWidth = widget.width as number;
 
-    if (typeof totalWidth !== 'number') {
+    if (typeof totalWidth !== "number") {
       return 46; // Fallback if width isn't available yet
     }
 
@@ -40,7 +40,10 @@ export class StatPresenter {
   /**
    * Render complete stats section
    */
-  renderStats(pokemon: PokemonDisplay, widget?: blessed.Widgets.BoxElement): string[] {
+  renderStats(
+    pokemon: PokemonDisplay,
+    widget?: blessed.Widgets.BoxElement,
+  ): string[] {
     const stats = pokemon.stats;
     const evYield = pokemon.evYield;
 
@@ -48,7 +51,7 @@ export class StatPresenter {
 
     // Header
     lines.push(`{${colors.pokemonYellow}-fg}{bold}Base Stats{/bold}{/}`);
-    lines.push('');
+    lines.push("");
 
     // Calculate available width for dynamic bar sizing
     const availableWidth = this.calculateAvailableWidth(widget);
@@ -58,25 +61,69 @@ export class StatPresenter {
     const effectiveGeneration = Math.max(sessionGeneration, pokemon.generation);
 
     // Stats with bars
-    lines.push(...this.createStatBar('HP', stats.hp, evYield.hp, availableWidth));
-    lines.push(...this.createStatBar('Attack', stats.attack, evYield.attack, availableWidth));
-    lines.push(...this.createStatBar('Defense', stats.defense, evYield.defense, availableWidth));
+    lines.push(
+      ...this.createStatBar("HP", stats.hp, evYield.hp, availableWidth),
+    );
+    lines.push(
+      ...this.createStatBar(
+        "Attack",
+        stats.attack,
+        evYield.attack,
+        availableWidth,
+      ),
+    );
+    lines.push(
+      ...this.createStatBar(
+        "Defense",
+        stats.defense,
+        evYield.defense,
+        availableWidth,
+      ),
+    );
 
     // In Gen 1, there was no Sp. Atk/Sp. Def split - just "Special"
     if (effectiveGeneration === 1) {
       // Use historical Gen 1 Special stat if available, otherwise fall back to specialAttack
       const gen1Special = GEN1_SPECIAL_STATS[pokemon.id] ?? stats.specialAttack;
-      lines.push(...this.createStatBar('Special', gen1Special, evYield.specialAttack, availableWidth));
+      lines.push(
+        ...this.createStatBar(
+          "Special",
+          gen1Special,
+          evYield.specialAttack,
+          availableWidth,
+        ),
+      );
     } else {
-      lines.push(...this.createStatBar('Sp. Atk', stats.specialAttack, evYield.specialAttack, availableWidth));
-      lines.push(...this.createStatBar('Sp. Def', stats.specialDefense, evYield.specialDefense, availableWidth));
+      lines.push(
+        ...this.createStatBar(
+          "Sp. Atk",
+          stats.specialAttack,
+          evYield.specialAttack,
+          availableWidth,
+        ),
+      );
+      lines.push(
+        ...this.createStatBar(
+          "Sp. Def",
+          stats.specialDefense,
+          evYield.specialDefense,
+          availableWidth,
+        ),
+      );
     }
 
-    lines.push(...this.createStatBar('Speed', stats.speed, evYield.speed, availableWidth));
+    lines.push(
+      ...this.createStatBar(
+        "Speed",
+        stats.speed,
+        evYield.speed,
+        availableWidth,
+      ),
+    );
 
     // Total
     const total = Object.values(stats).reduce((sum, val) => sum + val, 0);
-    lines.push('');
+    lines.push("");
     lines.push(`{bold}Total:{/bold} ${total}`);
 
     return lines;
@@ -85,10 +132,13 @@ export class StatPresenter {
   /**
    * Render abilities section with descriptions, filtered by generation
    */
-  async renderAbilities(pokemon: PokemonDisplay, widget?: blessed.Widgets.BoxElement): Promise<string[]> {
+  async renderAbilities(
+    pokemon: PokemonDisplay,
+    widget?: blessed.Widgets.BoxElement,
+  ): Promise<string[]> {
     const lines: string[] = [];
 
-    lines.push('');
+    lines.push("");
     lines.push(`{${colors.pokemonYellow}-fg}{bold}Abilities{/bold}{/}`);
 
     // Get effective generation for filtering
@@ -108,7 +158,7 @@ export class StatPresenter {
         continue; // Skip this ability
       }
 
-      const hidden = details.isHidden ? ' {cyan-fg}(Hidden){/}' : '';
+      const hidden = details.isHidden ? " {cyan-fg}(Hidden){/}" : "";
       lines.push(`• {bold}${details.displayName}${hidden}{/bold}`);
 
       // Add description or effect (prefer description, fallback to effect)
@@ -117,11 +167,11 @@ export class StatPresenter {
         // Wrap text to fit within the section with padding
         // Subtract 2 for the bullet indent "  "
         const wrapped = this.wrapText(text, availableWidth - 2);
-        wrapped.forEach(line => {
+        wrapped.forEach((line) => {
           lines.push(`  {gray-fg}${line}{/}`);
         });
       }
-      lines.push(''); // Spacing between abilities
+      lines.push(""); // Spacing between abilities
     }
 
     return lines;
@@ -131,13 +181,13 @@ export class StatPresenter {
    * Wrap text to a specified width
    */
   private wrapText(text: string, width: number): string[] {
-    const words = text.split(' ');
+    const words = text.split(" ");
     const lines: string[] = [];
-    let currentLine = '';
+    let currentLine = "";
 
     for (const word of words) {
       if (currentLine.length + word.length + 1 <= width) {
-        currentLine += (currentLine ? ' ' : '') + word;
+        currentLine += (currentLine ? " " : "") + word;
       } else {
         if (currentLine) lines.push(currentLine);
         currentLine = word;
@@ -151,7 +201,12 @@ export class StatPresenter {
   /**
    * Create a single stat bar with EV yield
    */
-  private createStatBar(name: string, value: number, ev: number, availableWidth: number): string[] {
+  private createStatBar(
+    name: string,
+    value: number,
+    ev: number,
+    availableWidth: number,
+  ): string[] {
     // Calculate dynamic bar width based on available space
     // Format: "{bold}NAME      {/} +EV VALUE █████░░░░░"
     // - Name: 10 chars (padded)
@@ -170,14 +225,14 @@ export class StatPresenter {
     // This ensures all bars end at the same point
     const barWidth = Math.max(
       availableWidth - nameWidth - valueWidth - spacingWidth - evReservedSpace,
-      10 // Minimum bar width
+      10, // Minimum bar width
     );
 
     const maxStat = 255;
     const filled = Math.floor((value / maxStat) * barWidth);
     const empty = barWidth - filled;
 
-    const bar = '█'.repeat(filled) + '░'.repeat(empty);
+    const bar = "█".repeat(filled) + "░".repeat(empty);
 
     // Create EV section - always reserve 6 chars for alignment
     // If EV exists: "+N EV " (total 6 chars: text + trailing space)
@@ -187,10 +242,10 @@ export class StatPresenter {
       const evDisplay = `+${ev} EV`;
       const evLength = evDisplay.length;
       // Total section is 6 chars: evDisplay length + padding
-      const padding = ' '.repeat(evReservedSpace - evLength);
+      const padding = " ".repeat(evReservedSpace - evLength);
       evSection = `{${theme.evYield.fg}-fg}${evDisplay}{/}${padding}`;
     } else {
-      evSection = ' '.repeat(evReservedSpace);
+      evSection = " ".repeat(evReservedSpace);
     }
 
     return [
@@ -210,9 +265,9 @@ export class StatPresenter {
    * Get stat color based on value (for future use)
    */
   getStatColor(value: number): string {
-    if (value >= 150) return 'red';      // Excellent
-    if (value >= 100) return 'yellow';   // Good
-    if (value >= 70) return 'green';     // Average
-    return 'white';                       // Low
+    if (value >= 150) return "red"; // Excellent
+    if (value >= 100) return "yellow"; // Good
+    if (value >= 70) return "green"; // Average
+    return "white"; // Low
   }
 }

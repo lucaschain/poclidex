@@ -1,9 +1,9 @@
-import blessed from 'blessed';
-import { colors } from '../theme.js';
-import { SearchBox } from '../components/searchBox.js';
-import { PokemonList } from '../components/pokemonList.js';
-import { searchService } from '../../services/searchService.js';
-import { pokemonService } from '../../services/pokemonService.js';
+import blessed from "blessed";
+import { colors } from "../theme.js";
+import { SearchBox } from "../components/searchBox.js";
+import { PokemonList } from "../components/pokemonList.js";
+import { searchService } from "../../services/searchService.js";
+import { pokemonService } from "../../services/pokemonService.js";
 
 export interface HomeScreenOptions {
   parent: blessed.Widgets.Node;
@@ -28,10 +28,10 @@ export class HomeScreen {
       parent: options.parent,
       top: 0,
       left: 0,
-      width: '100%',
-      height: '100%',
+      width: "100%",
+      height: "100%",
       style: {
-        bg: 'transparent',
+        bg: "transparent",
       },
     });
 
@@ -40,7 +40,7 @@ export class HomeScreen {
       parent: this.container,
       screen: this.screen,
       top: 0,
-      width: '100%',
+      width: "100%",
       onSearch: (query) => this.handleSearch(query),
       onNavigateDown: () => this.pokemonList.moveSelectionDown(),
       onNavigateUp: () => this.pokemonList.moveSelectionUp(),
@@ -51,8 +51,8 @@ export class HomeScreen {
     this.pokemonList = new PokemonList({
       parent: this.container,
       top: 3, // Right below search box (no extra spacing)
-      width: '100%',
-      height: '100%-4', // Full height minus search box and status bar
+      width: "100%",
+      height: "100%-4", // Full height minus search box and status bar
       onSelect: (pokemon) => this.handlePokemonSelect(pokemon.name),
     });
 
@@ -61,12 +61,12 @@ export class HomeScreen {
       parent: this.container,
       bottom: 0,
       left: 0,
-      width: '100%',
+      width: "100%",
       height: 1,
       tags: true,
-      content: 'Loading Pokemon data...',
+      content: "Loading Pokemon data...",
       style: {
-        fg: 'white',
+        fg: "white",
         bg: colors.navyBlue,
       },
     });
@@ -91,7 +91,9 @@ export class HomeScreen {
       this.pokemonList.setData(pokemonList);
 
       // Update status
-      this.updateStatus(`Loaded ${pokemonList.length} Pokemon. Start typing to search.`);
+      this.updateStatus(
+        `Loaded ${pokemonList.length} Pokemon. Start typing to search.`,
+      );
 
       // Focus the search box by default (always focused)
       this.searchBox.focus();
@@ -103,19 +105,19 @@ export class HomeScreen {
   }
 
   private handleSearch(query: string): void {
-    if (!query || query.trim() === '') {
+    if (!query || query.trim() === "") {
       // Show all Pokemon
       this.pokemonList.filter([]);
       this.updateStatus(
-        `Showing all ${this.pokemonList.total} Pokemon. Press Ctrl+S to search.`
+        `Showing all ${this.pokemonList.total} Pokemon. Press Ctrl+S to search.`,
       );
     } else {
       // Filter by search results
       const results = searchService.search(query, 50);
-      const names = results.map(r => r.name);
+      const names = results.map((r) => r.name);
       this.pokemonList.filter(names);
       this.updateStatus(
-        `Found ${this.pokemonList.count} Pokemon matching "${query}"`
+        `Found ${this.pokemonList.count} Pokemon matching "${query}"`,
       );
     }
   }
@@ -127,7 +129,6 @@ export class HomeScreen {
       await this.onPokemonSelectCallback(name);
     }
   }
-
 
   private updateStatus(message: string): void {
     this.statusBar.setContent(message);

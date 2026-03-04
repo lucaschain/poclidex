@@ -1,5 +1,5 @@
-import type { PokemonListItem, EvolutionChain } from '../api/types.js';
-import type { PokemonDisplay } from '../models/pokemon.js';
+import type { PokemonListItem, EvolutionChain } from "../api/types.js";
+import type { PokemonDisplay } from "../models/pokemon.js";
 
 /**
  * Filter options for Pokemon queries
@@ -19,11 +19,11 @@ export interface FilterOptions {
 export interface MoveData {
   name: string;
   type: string;
-  category: 'physical' | 'special' | 'status';
+  category: "physical" | "special" | "status";
   power: number | null;
   accuracy: number | null;
   pp: number;
-  learnMethod: 'level-up' | 'machine' | 'egg' | 'tutor';
+  learnMethod: "level-up" | "machine" | "egg" | "tutor";
   levelLearned?: number;
   generation?: number;
   description?: string;

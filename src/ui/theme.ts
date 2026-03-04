@@ -1,35 +1,35 @@
 export const colors = {
   // Pokedex brand colors
-  pokedexRed: '#CC0000',
-  pokemonYellow: '#FFCB05',
-  pokedexBlue: '#3D7DCA',
-  navyBlue: '#003A70',
-  screenBlue: '#3B4CCA',
-  lightScreenBlue: '#B0D4FF', // Blueish background for sprite display
+  pokedexRed: "#CC0000",
+  pokemonYellow: "#FFCB05",
+  pokedexBlue: "#3D7DCA",
+  navyBlue: "#003A70",
+  screenBlue: "#3B4CCA",
+  lightScreenBlue: "#B0D4FF", // Blueish background for sprite display
 
   // Background colors
-  defaultBg: '#1a1a2e', // Dark blue-grey background
-  darkBg: '#0f0f1e', // Even darker background for contrast
+  defaultBg: "#1a1a2e", // Dark blue-grey background
+  darkBg: "#0f0f1e", // Even darker background for contrast
 
   // Type colors
-  normal: '#A8A878',
-  fire: '#F08030',
-  water: '#6890F0',
-  electric: '#F8D030',
-  grass: '#78C850',
-  ice: '#98D8D8',
-  fighting: '#C03028',
-  poison: '#A040A0',
-  ground: '#E0C068',
-  flying: '#A890F0',
-  psychic: '#F85888',
-  bug: '#A8B820',
-  rock: '#B8A038',
-  ghost: '#705898',
-  dragon: '#7038F8',
-  dark: '#705848',
-  steel: '#B8B8D0',
-  fairy: '#EE99AC',
+  normal: "#A8A878",
+  fire: "#F08030",
+  water: "#6890F0",
+  electric: "#F8D030",
+  grass: "#78C850",
+  ice: "#98D8D8",
+  fighting: "#C03028",
+  poison: "#A040A0",
+  ground: "#E0C068",
+  flying: "#A890F0",
+  psychic: "#F85888",
+  bug: "#A8B820",
+  rock: "#B8A038",
+  ghost: "#705898",
+  dragon: "#7038F8",
+  dark: "#705848",
+  steel: "#B8B8D0",
+  fairy: "#EE99AC",
 };
 
 export const theme = {
@@ -45,31 +45,31 @@ export const theme = {
     fg: colors.pokedexBlue,
   },
   info: {
-    fg: 'white',
+    fg: "white",
   },
   label: {
     fg: colors.screenBlue,
     bold: true,
   },
   evYield: {
-    fg: '#90EE90', // Light green for EV yield
+    fg: "#90EE90", // Light green for EV yield
     bold: true,
   },
   footer: {
-    fg: '#888888',
+    fg: "#888888",
   },
   searchBox: {
-    fg: 'white',
+    fg: "white",
     bg: colors.navyBlue,
     border: {
       fg: colors.pokemonYellow,
     },
   },
   list: {
-    fg: 'white',
+    fg: "white",
     bg: colors.darkBg,
     selected: {
-      fg: 'black',
+      fg: "black",
       bg: colors.pokemonYellow,
     },
     border: {

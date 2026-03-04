@@ -1,31 +1,31 @@
-import { pokemonService } from '../services/pokemonService.js';
-import { pokeAPI } from '../api/pokeapi.js';
-import type { PokemonListItem, EvolutionChain } from '../api/types.js';
-import type { PokemonDisplay } from '../models/pokemon.js';
-import { transformPokemon } from '../models/pokemon.js';
+import { pokemonService } from "../services/pokemonService.js";
+import { pokeAPI } from "../api/pokeapi.js";
+import type { PokemonListItem, EvolutionChain } from "../api/types.js";
+import type { PokemonDisplay } from "../models/pokemon.js";
+import { transformPokemon } from "../models/pokemon.js";
 import type {
   IPokemonRepository,
   FilterOptions,
   MoveData,
   AbilityDetail,
-} from './IPokemonRepository.js';
-import { LRUCache } from '../utils/cache.js';
-import { generationService } from '../services/generationService.js';
-import { getGenerationFromVersionGroup } from '../constants/versionGroups.js';
+} from "./IPokemonRepository.js";
+import { LRUCache } from "../utils/cache.js";
+import { generationService } from "../services/generationService.js";
+import { getGenerationFromVersionGroup } from "../constants/versionGroups.js";
 
 /**
  * Generation ranges (based on National Dex numbers)
  */
 const GENERATION_RANGES = [
-  { gen: 1, start: 1, end: 151, name: 'Kanto', region: 'Kanto' },
-  { gen: 2, start: 152, end: 251, name: 'Johto', region: 'Johto' },
-  { gen: 3, start: 252, end: 386, name: 'Hoenn', region: 'Hoenn' },
-  { gen: 4, start: 387, end: 493, name: 'Sinnoh', region: 'Sinnoh' },
-  { gen: 5, start: 494, end: 649, name: 'Unova', region: 'Unova' },
-  { gen: 6, start: 650, end: 721, name: 'Kalos', region: 'Kalos' },
-  { gen: 7, start: 722, end: 809, name: 'Alola', region: 'Alola' },
-  { gen: 8, start: 810, end: 905, name: 'Galar', region: 'Galar' },
-  { gen: 9, start: 906, end: 1025, name: 'Paldea', region: 'Paldea' },
+  { gen: 1, start: 1, end: 151, name: "Kanto", region: "Kanto" },
+  { gen: 2, start: 152, end: 251, name: "Johto", region: "Johto" },
+  { gen: 3, start: 252, end: 386, name: "Hoenn", region: "Hoenn" },
+  { gen: 4, start: 387, end: 493, name: "Sinnoh", region: "Sinnoh" },
+  { gen: 5, start: 494, end: 649, name: "Unova", region: "Unova" },
+  { gen: 6, start: 650, end: 721, name: "Kalos", region: "Kalos" },
+  { gen: 7, start: 722, end: 809, name: "Alola", region: "Alola" },
+  { gen: 8, start: 810, end: 905, name: "Galar", region: "Galar" },
+  { gen: 9, start: 906, end: 1025, name: "Paldea", region: "Paldea" },
 ];
 
 /**
@@ -36,7 +36,7 @@ const GENERATION_RANGES = [
  */
 export class PokemonRepository implements IPokemonRepository {
   private abilityCache: LRUCache<string, AbilityDetail>;
-  private moveCache: LRUCache<string, import('../api/types.js').Move>;
+  private moveCache: LRUCache<string, import("../api/types.js").Move>;
 
   constructor() {
     this.abilityCache = new LRUCache(100); // Cache up to 100 abilities
@@ -59,9 +59,11 @@ export class PokemonRepository implements IPokemonRepository {
 
     // Filter by generation
     if (options.generation !== undefined) {
-      const genRange = GENERATION_RANGES.find(g => g.gen === options.generation);
+      const genRange = GENERATION_RANGES.find(
+        (g) => g.gen === options.generation,
+      );
       if (genRange) {
-        filtered = filtered.filter(p => {
+        filtered = filtered.filter((p) => {
           const id = this.extractIdFromUrl(p.url);
           return id >= genRange.start && id <= genRange.end;
         });
@@ -116,7 +118,8 @@ export class PokemonRepository implements IPokemonRepository {
    */
   async getMoves(pokemonId: number, generation?: number): Promise<MoveData[]> {
     // Use session generation if not specified
-    const filterGeneration = generation ?? generationService.getSessionGeneration();
+    const filterGeneration =
+      generation ?? generationService.getSessionGeneration();
 
     // Get effective generation (max of filter and Pokemon's release)
     const pokemonGeneration = this.getGeneration(pokemonId);
@@ -126,7 +129,7 @@ export class PokemonRepository implements IPokemonRepository {
     const pokemon = await pokeAPI.getPokemon(pokemonId);
 
     // Filter to main learn methods
-    const mainMethods = ['level-up', 'machine', 'egg', 'tutor'];
+    const mainMethods = ["level-up", "machine", "egg", "tutor"];
 
     // Get move details for each move, filtered by generation
     const moveMap = new Map<string, { method: string; level: number }>();
@@ -134,14 +137,16 @@ export class PokemonRepository implements IPokemonRepository {
     for (const pokemonMove of pokemon.moves) {
       // Filter version group details by generation and learn method
       let validDetails = pokemonMove.version_group_details
-        .filter(d => {
+        .filter((d) => {
           // Filter by learn method
           if (!mainMethods.includes(d.move_learn_method.name)) {
             return false;
           }
 
           // Filter by generation
-          const vgGeneration = getGenerationFromVersionGroup(d.version_group.name);
+          const vgGeneration = getGenerationFromVersionGroup(
+            d.version_group.name,
+          );
           return vgGeneration <= effectiveGeneration;
         })
         .sort((a, b) => {
@@ -156,7 +161,7 @@ export class PokemonRepository implements IPokemonRepository {
         const detail = validDetails[0];
         moveMap.set(pokemonMove.move.name, {
           method: detail.move_learn_method.name,
-          level: detail.level_learned_at
+          level: detail.level_learned_at,
         });
       }
     }
@@ -175,7 +180,7 @@ export class PokemonRepository implements IPokemonRepository {
         const move = await pokeAPI.getMove(moveName);
         this.moveCache.set(moveName, move);
         return move;
-      })
+      }),
     );
 
     // Transform to MoveData format
@@ -184,16 +189,22 @@ export class PokemonRepository implements IPokemonRepository {
       const learnInfo = moveMap.get(moveName)!;
 
       // Get English short effect
-      const shortEffect = move.effect_entries.find(e => e.language.name === 'en')?.short_effect || 'No description available.';
+      const shortEffect =
+        move.effect_entries.find((e) => e.language.name === "en")
+          ?.short_effect || "No description available.";
 
       return {
         name: move.name,
         type: move.type.name,
-        category: move.damage_class.name as 'physical' | 'special' | 'status',
+        category: move.damage_class.name as "physical" | "special" | "status",
         power: move.power,
         accuracy: move.accuracy,
         pp: move.pp,
-        learnMethod: learnInfo.method as 'level-up' | 'machine' | 'egg' | 'tutor',
+        learnMethod: learnInfo.method as
+          | "level-up"
+          | "machine"
+          | "egg"
+          | "tutor",
         levelLearned: learnInfo.level > 0 ? learnInfo.level : undefined,
         description: shortEffect,
       };
@@ -202,16 +213,18 @@ export class PokemonRepository implements IPokemonRepository {
     // Sort moves: level-up by level, then alphabetically by name
     moves.sort((a, b) => {
       // Level-up moves first, sorted by level
-      if (a.learnMethod === 'level-up' && b.learnMethod === 'level-up') {
+      if (a.learnMethod === "level-up" && b.learnMethod === "level-up") {
         return (a.levelLearned || 0) - (b.levelLearned || 0);
       }
-      if (a.learnMethod === 'level-up') return -1;
-      if (b.learnMethod === 'level-up') return 1;
+      if (a.learnMethod === "level-up") return -1;
+      if (b.learnMethod === "level-up") return 1;
 
       // Then by learn method
-      const methodOrder = { 'machine': 0, 'egg': 1, 'tutor': 2 };
-      const aOrder = methodOrder[a.learnMethod as keyof typeof methodOrder] ?? 99;
-      const bOrder = methodOrder[b.learnMethod as keyof typeof methodOrder] ?? 99;
+      const methodOrder = { machine: 0, egg: 1, tutor: 2 };
+      const aOrder =
+        methodOrder[a.learnMethod as keyof typeof methodOrder] ?? 99;
+      const bOrder =
+        methodOrder[b.learnMethod as keyof typeof methodOrder] ?? 99;
       if (aOrder !== bOrder) return aOrder - bOrder;
 
       // Finally alphabetically by name
@@ -237,17 +250,17 @@ export class PokemonRepository implements IPokemonRepository {
 
       // Find English effect entry
       const englishEffect = ability.effect_entries.find(
-        entry => entry.language.name === 'en'
+        (entry) => entry.language.name === "en",
       );
 
       // Find English flavor text (most recent version)
       const englishFlavor = ability.flavor_text_entries
-        .filter(entry => entry.language.name === 'en')
+        .filter((entry) => entry.language.name === "en")
         .pop(); // Get the last (most recent) entry
 
       // Find English name
       const englishName = ability.names.find(
-        name => name.language.name === 'en'
+        (name) => name.language.name === "en",
       );
 
       // Extract generation number from URL
@@ -257,8 +270,8 @@ export class PokemonRepository implements IPokemonRepository {
       const abilityDetail: AbilityDetail = {
         name: ability.name,
         displayName: englishName?.name || this.formatAbilityName(ability.name),
-        description: englishFlavor?.flavor_text.replace(/\n/g, ' ') || '',
-        effect: englishEffect?.short_effect || englishEffect?.effect || '',
+        description: englishFlavor?.flavor_text.replace(/\n/g, " ") || "",
+        effect: englishEffect?.short_effect || englishEffect?.effect || "",
         generation,
         isHidden: false, // This will be set by the caller based on Pokemon data
       };
@@ -272,8 +285,8 @@ export class PokemonRepository implements IPokemonRepository {
       return {
         name: abilityName,
         displayName: this.formatAbilityName(abilityName),
-        description: 'Unable to load ability details.',
-        effect: '',
+        description: "Unable to load ability details.",
+        effect: "",
         generation: 1,
         isHidden: false,
       };
@@ -285,9 +298,9 @@ export class PokemonRepository implements IPokemonRepository {
    */
   private formatAbilityName(name: string): string {
     return name
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   }
 
   /**
@@ -295,7 +308,7 @@ export class PokemonRepository implements IPokemonRepository {
    */
   getGeneration(pokemonId: number): number {
     const genInfo = GENERATION_RANGES.find(
-      g => pokemonId >= g.start && pokemonId <= g.end
+      (g) => pokemonId >= g.start && pokemonId <= g.end,
     );
     return genInfo?.gen || 1;
   }

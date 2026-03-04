@@ -1,7 +1,10 @@
-import { colors } from '../theme.js';
-import type { PokemonDisplay } from '../../models/pokemon.js';
-import type { EvolutionChain } from '../../api/types.js';
-import { pokemonService, type EvolutionStage } from '../../services/pokemonService.js';
+import { colors } from "../theme.js";
+import type { PokemonDisplay } from "../../models/pokemon.js";
+import type { EvolutionChain } from "../../api/types.js";
+import {
+  pokemonService,
+  type EvolutionStage,
+} from "../../services/pokemonService.js";
 
 /**
  * Presenter for rendering evolution chains
@@ -14,19 +17,19 @@ export class EvolutionPresenter {
    */
   async renderEvolutionChain(
     pokemon: PokemonDisplay,
-    chain: EvolutionChain
+    chain: EvolutionChain,
   ): Promise<string[]> {
     const root = pokemonService.parseEvolutionChainStructured(chain);
     const lines: string[] = [];
 
     // Add spacing at top
-    lines.push('');
+    lines.push("");
 
     // Build linear evolution chain (only follows first branch for simplicity)
     this.renderStageVertical(root, pokemon.name, lines);
 
     // Add spacing at bottom
-    lines.push('');
+    lines.push("");
 
     return lines;
   }
@@ -37,10 +40,11 @@ export class EvolutionPresenter {
   private renderStageVertical(
     stage: EvolutionStage,
     currentPokemon: string,
-    lines: string[]
+    lines: string[],
   ): void {
     const isCurrent = stage.species === currentPokemon;
-    const displayName = stage.species.charAt(0).toUpperCase() + stage.species.slice(1);
+    const displayName =
+      stage.species.charAt(0).toUpperCase() + stage.species.slice(1);
 
     // Format Pokemon name with highlighting if current
     const formattedName = isCurrent
@@ -54,12 +58,12 @@ export class EvolutionPresenter {
       const branch = stage.branches[0]; // Follow first branch for linear display
 
       // Add down arrow
-      lines.push('{center}↓{/center}');
+      lines.push("{center}↓{/center}");
 
       // Add evolution method if exists
       if (branch.method) {
         lines.push(`{center}${branch.method}{/center}`);
-        lines.push('{center}↓{/center}');
+        lines.push("{center}↓{/center}");
       }
 
       // Recursively render next stage

@@ -1,7 +1,7 @@
-import blessed from 'blessed';
-import { colors } from '../theme.js';
-import type { IDetailSection } from './sections/IDetailSection.js';
-import type { PokemonDisplay } from '../../models/pokemon.js';
+import blessed from "blessed";
+import { colors } from "../theme.js";
+import type { IDetailSection } from "./sections/IDetailSection.js";
+import type { PokemonDisplay } from "../../models/pokemon.js";
 
 export interface Tab {
   section: IDetailSection;
@@ -31,7 +31,7 @@ export class TabbedPanel {
       left?: number | string;
       width?: number | string;
       height?: number | string;
-    }
+    },
   ) {
     this.screen = screen;
 
@@ -40,8 +40,8 @@ export class TabbedPanel {
       parent,
       top: options.top ?? 0,
       left: options.left ?? 0,
-      width: options.width ?? '100%',
-      height: options.height ?? '100%',
+      width: options.width ?? "100%",
+      height: options.height ?? "100%",
     });
 
     // Tab bar at the top
@@ -49,7 +49,7 @@ export class TabbedPanel {
       parent: this.container,
       top: 0,
       left: 0,
-      width: '100%',
+      width: "100%",
       height: 1,
       tags: true,
       style: {
@@ -62,10 +62,10 @@ export class TabbedPanel {
       parent: this.container,
       top: 1,
       left: 0,
-      width: '100%',
-      height: '100%-1',
+      width: "100%",
+      height: "100%-1",
       style: {
-        bg: 'transparent',
+        bg: "transparent",
       },
     });
 
@@ -86,8 +86,8 @@ export class TabbedPanel {
     // Set to full size
     widget.top = 0;
     widget.left = 0;
-    widget.width = '100%';
-    widget.height = '100%';
+    widget.width = "100%";
+    widget.height = "100%";
 
     // Hide by default (show only active tab)
     if (this.tabs.length > 1) {
@@ -136,7 +136,8 @@ export class TabbedPanel {
    * Switch to previous tab
    */
   previousTab(): void {
-    const prevIndex = (this.activeTabIndex - 1 + this.tabs.length) % this.tabs.length;
+    const prevIndex =
+      (this.activeTabIndex - 1 + this.tabs.length) % this.tabs.length;
     this.switchTab(prevIndex);
   }
 
@@ -144,7 +145,7 @@ export class TabbedPanel {
    * Switch tab by shortcut key (1-4)
    */
   switchByShortcut(key: string): void {
-    const tabIndex = this.tabs.findIndex(t => t.shortcut === key);
+    const tabIndex = this.tabs.findIndex((t) => t.shortcut === key);
     if (tabIndex !== -1) {
       this.switchTab(tabIndex);
     }
@@ -154,9 +155,7 @@ export class TabbedPanel {
    * Update all tabs with new Pokemon data
    */
   async updateAll(pokemon: PokemonDisplay): Promise<void> {
-    await Promise.all(
-      this.tabs.map(tab => tab.section.update(pokemon))
-    );
+    await Promise.all(this.tabs.map((tab) => tab.section.update(pokemon)));
   }
 
   /**
@@ -179,13 +178,13 @@ export class TabbedPanel {
   private renderTabBar(): void {
     const tabItems = this.tabs.map((tab, index) => {
       const isActive = index === this.activeTabIndex;
-      const prefix = isActive ? '●' : '○';
-      const color = isActive ? colors.pokemonYellow : 'white';
+      const prefix = isActive ? "●" : "○";
+      const color = isActive ? colors.pokemonYellow : "white";
 
       return `{${color}-fg}${tab.shortcut}.${prefix} ${tab.label}{/}`;
     });
 
-    const content = ` ${tabItems.join('  ')}`;
+    const content = ` ${tabItems.join("  ")}`;
     this.tabBar.setContent(content);
   }
 
@@ -194,34 +193,34 @@ export class TabbedPanel {
    */
   private setupHotkeys(): void {
     // Tab key - next tab
-    this.screen.key(['tab'], () => {
+    this.screen.key(["tab"], () => {
       if (this.isVisible()) {
         this.nextTab();
       }
     });
 
     // Shift+Tab - previous tab
-    this.screen.key(['S-tab'], () => {
+    this.screen.key(["S-tab"], () => {
       if (this.isVisible()) {
         this.previousTab();
       }
     });
 
     // Arrow keys
-    this.screen.key(['right'], () => {
+    this.screen.key(["right"], () => {
       if (this.isVisible()) {
         this.nextTab();
       }
     });
 
-    this.screen.key(['left'], () => {
+    this.screen.key(["left"], () => {
       if (this.isVisible()) {
         this.previousTab();
       }
     });
 
     // Number keys 1-4
-    ['1', '2', '3', '4'].forEach(key => {
+    ["1", "2", "3", "4"].forEach((key) => {
       this.screen.key([key], () => {
         if (this.isVisible()) {
           this.switchByShortcut(key);
@@ -255,7 +254,7 @@ export class TabbedPanel {
    * Clean up
    */
   destroy(): void {
-    this.tabs.forEach(tab => tab.section.destroy());
+    this.tabs.forEach((tab) => tab.section.destroy());
     this.container.destroy();
   }
 }
