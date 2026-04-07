@@ -1,4 +1,6 @@
-# Pokedex CLI
+# Poclidex
+
+This is my invitation to the slop party
 
 An interactive command-line Pokedex application built with TypeScript, featuring fuzzy search and ASCII art sprites.
 
